@@ -34,6 +34,7 @@ export function Timetable({ setView }: { setView: (v: View) => void }) {
       {events.length === 0 ? (
         <div className="empty">No meeting times yet. Edit a course and add its weekly meetings to fill the timetable.</div>
       ) : (
+        <div className="tt-scroll">
         <div className="timetable" style={{ gridTemplateColumns: `52px repeat(${days}, 1fr)` }}>
           <div className="tt-head" />
           {DAY_NAMES.slice(0, days).map((d, i) => (
@@ -78,6 +79,7 @@ export function Timetable({ setView }: { setView: (v: View) => void }) {
                 })}
             </div>
           ))}
+        </div>
         </div>
       )}
     </div>

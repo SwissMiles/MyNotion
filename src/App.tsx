@@ -23,6 +23,7 @@ export default function App() {
   const [view, setViewRaw] = useState<View>({ kind: "dashboard" });
   const [lastListView, setLastListView] = useState<View>({ kind: "notes" });
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) ?? "light");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -32,17 +33,26 @@ export default function App() {
   function setView(v: View) {
     if (v.kind !== "page") setLastListView(v);
     setViewRaw(v);
+    setSidebarOpen(false);
   }
 
   return (
     <StoreProvider>
       <div className="app">
+        <header className="mobile-topbar">
+          <button className="icon-btn menu-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+            ☰
+          </button>
+          <span className="topbar-title">🎓 MyNotion</span>
+        </header>
         <Sidebar
           view={view}
           setView={setView}
           theme={theme}
           toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
+          open={sidebarOpen}
         />
+        {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
         <main className="main">
           {view.kind === "dashboard" && <Dashboard setView={setView} />}
           {view.kind === "tasks" && <TasksView />}
