@@ -23,8 +23,11 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
   `# ` heading, `## ` subheading, `- ` bullet, `[] ` to-do, `> ` quote,
   ` ``` ` code, `---` divider. Enter continues lists, Backspace exits them,
   ⌥↑/⌥↓ moves blocks. Pages can be general or attached to a course.
-- **Grades & GPA** — weighted grade entries per course (score / out of /
-  weight %), letter grade, and a credit-weighted semester GPA on the 4.0 scale.
+- **Grades (Swiss system)** — grades on the Swiss 1–6 scale (6 best,
+  4.0 = pass). Enter grades directly or from points using the standard formula
+  (5 · points ⁄ max + 1). Course grades are weighted averages rounded to
+  quarter grades (ETH-style); the semester average is credit-weighted. Failing
+  grades are highlighted.
 - **Light & dark mode**, and **JSON export / import** for backups.
 
 All data is stored locally in your browser (`localStorage`) — no account, no

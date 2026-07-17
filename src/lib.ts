@@ -37,62 +37,54 @@ export function sortByDue(tasks: Task[]): Task[] {
 }
 
 /**
- * Weighted course grade in percent, or null when no grades entered.
- * Each entry contributes (score/outOf) at its weight; weights are normalized
- * over the entered entries so a partially-graded course still shows a
- * meaningful "current standing".
+ * Swiss grading: 1.0 (worst) … 6.0 (best), 4.0 and above is a pass.
+ * Weighted course average on that scale, or null when no grades entered.
+ * Weights are normalized over the entered entries so a partially-graded
+ * course still shows a meaningful "current standing".
  */
 export function courseGrade(grades: GradeEntry[]): number | null {
-  const valid = grades.filter((g) => g.outOf > 0 && g.weight > 0);
+  const valid = grades.filter((g) => g.weight > 0 && g.grade >= 1 && g.grade <= 6);
   if (valid.length === 0) return null;
   const totalWeight = valid.reduce((s, g) => s + g.weight, 0);
-  const weighted = valid.reduce((s, g) => s + (g.score / g.outOf) * g.weight, 0);
-  return (weighted / totalWeight) * 100;
+  const weighted = valid.reduce((s, g) => s + g.grade * g.weight, 0);
+  return weighted / totalWeight;
 }
 
-/** US-style 4.0 scale from a percentage. */
-export function percentToGpa(pct: number): number {
-  if (pct >= 93) return 4.0;
-  if (pct >= 90) return 3.7;
-  if (pct >= 87) return 3.3;
-  if (pct >= 83) return 3.0;
-  if (pct >= 80) return 2.7;
-  if (pct >= 77) return 2.3;
-  if (pct >= 73) return 2.0;
-  if (pct >= 70) return 1.7;
-  if (pct >= 67) return 1.3;
-  if (pct >= 63) return 1.0;
-  if (pct >= 60) return 0.7;
-  return 0.0;
+/** Official course grade, rounded to the nearest quarter grade (ETH-style). */
+export function roundToQuarter(grade: number): number {
+  return Math.round(grade * 4) / 4;
 }
 
-export function letterGrade(pct: number): string {
-  if (pct >= 93) return "A";
-  if (pct >= 90) return "A-";
-  if (pct >= 87) return "B+";
-  if (pct >= 83) return "B";
-  if (pct >= 80) return "B-";
-  if (pct >= 77) return "C+";
-  if (pct >= 73) return "C";
-  if (pct >= 70) return "C-";
-  if (pct >= 67) return "D+";
-  if (pct >= 63) return "D";
-  if (pct >= 60) return "D-";
-  return "F";
+export const PASS_GRADE = 4.0;
+
+export function isPass(grade: number): boolean {
+  return roundToQuarter(grade) >= PASS_GRADE;
 }
 
-/** Credit-weighted GPA across courses that have any grades. */
-export function semesterGpa(courses: Course[], grades: GradeEntry[]): number | null {
+/** Standard Swiss points-to-grade formula: 5 · points/max + 1. */
+export function pointsToGrade(score: number, outOf: number): number {
+  if (outOf <= 0) return 1;
+  return Math.min(6, Math.max(1, 5 * (score / outOf) + 1));
+}
+
+export function fmtGrade(grade: number): string {
+  // quarter grades print naturally: 4.5, 5.25 — otherwise two decimals
+  const rounded = Math.round(grade * 100) / 100;
+  return String(Number.isInteger(rounded * 4) ? rounded * 4 / 4 : rounded.toFixed(2));
+}
+
+/** Credit-weighted semester average (1–6) across courses that have any grades. */
+export function semesterAverage(courses: Course[], grades: GradeEntry[]): number | null {
   let creditSum = 0;
-  let pointSum = 0;
+  let gradeSum = 0;
   for (const c of courses) {
-    const pct = courseGrade(grades.filter((g) => g.courseId === c.id));
-    if (pct === null) continue;
+    const avg = courseGrade(grades.filter((g) => g.courseId === c.id));
+    if (avg === null) continue;
     const credits = c.credits > 0 ? c.credits : 1;
     creditSum += credits;
-    pointSum += percentToGpa(pct) * credits;
+    gradeSum += roundToQuarter(avg) * credits;
   }
-  return creditSum > 0 ? pointSum / creditSum : null;
+  return creditSum > 0 ? gradeSum / creditSum : null;
 }
 
 export const TASK_KIND_ICONS: Record<string, string> = {

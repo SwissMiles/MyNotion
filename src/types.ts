@@ -64,8 +64,7 @@ export interface GradeEntry {
   courseId: ID;
   name: string; // e.g. "Midterm 1"
   category: string; // e.g. "Exams"
-  score: number; // points earned
-  outOf: number; // max points
+  grade: number; // Swiss grade, 1.0 (worst) to 6.0 (best); 4.0 is a pass
   weight: number; // percent weight of final grade
 }
 
