@@ -33,7 +33,18 @@ function seedState(): AppState {
 function load(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as AppState;
+    if (raw) {
+      const state = JSON.parse(raw) as AppState;
+      // migrate pre-Swiss-grading entries (score/outOf) to a 1–6 grade
+      state.grades = state.grades.map((g) => {
+        const old = g as unknown as { score?: number; outOf?: number; grade?: number };
+        if (old.grade === undefined && old.outOf && old.outOf > 0) {
+          return { ...g, grade: Math.min(6, Math.max(1, 5 * ((old.score ?? 0) / old.outOf) + 1)) };
+        }
+        return g;
+      });
+      return state;
+    }
   } catch {
     // corrupted storage — start fresh
   }

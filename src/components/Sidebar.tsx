@@ -52,7 +52,7 @@ export function Sidebar({
     { key: "dashboard", icon: "🏠", label: "Dashboard" },
     { key: "tasks", icon: "✅", label: "Assignments & Exams", count: openTasks },
     { key: "timetable", icon: "🗓️", label: "Timetable" },
-    { key: "grades", icon: "📊", label: "Grades & GPA" },
+    { key: "grades", icon: "📊", label: "Grades" },
     { key: "notes", icon: "📄", label: "All Notes" },
   ];
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useActiveSemester } from "../store";
-import { DAY_NAMES, daysUntil, fmtDateLong, semesterGpa, sortByDue } from "../lib";
+import { DAY_NAMES, daysUntil, fmtDateLong, semesterAverage, sortByDue } from "../lib";
 import { TaskList, TaskModal } from "../components/tasks";
 import type { Task } from "../types";
 import type { View } from "../App";
@@ -14,7 +14,7 @@ export function Dashboard({ setView }: { setView: (v: View) => void }) {
   const open = tasks.filter((t) => !t.done);
   const upcoming = sortByDue(open).slice(0, 6);
   const nextExam = sortByDue(open.filter((t) => t.kind === "exam" && daysUntil(t.due) >= 0))[0];
-  const gpa = semesterGpa(courses, grades);
+  const avg = semesterAverage(courses, grades);
 
   // semester progress
   const start = new Date(semester.startDate).getTime();
@@ -45,8 +45,8 @@ export function Dashboard({ setView }: { setView: (v: View) => void }) {
           <div className="cap">{nextExam ? `until ${nextExam.title}` : "no exams scheduled"}</div>
         </div>
         <div className="stat">
-          <div className="num">{gpa !== null ? gpa.toFixed(2) : "—"}</div>
-          <div className="cap">current GPA</div>
+          <div className="num">{avg !== null ? avg.toFixed(2) : "—"}</div>
+          <div className="cap">average grade (of 6)</div>
         </div>
         <div className="stat">
           <div className="num">{Math.round(progress)}%</div>
