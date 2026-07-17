@@ -10,11 +10,13 @@ export function Sidebar({
   setView,
   theme,
   toggleTheme,
+  open,
 }: {
   view: View;
   setView: (v: View) => void;
   theme: string;
   toggleTheme: () => void;
+  open: boolean;
 }) {
   const state = useAppState();
   const dispatch = useDispatch();
@@ -57,7 +59,7 @@ export function Sidebar({
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${open ? "open" : ""}`}>
       <div className="sidebar-head">
         <span className="logo">🎓</span>
         <span className="name">MyNotion</span>
