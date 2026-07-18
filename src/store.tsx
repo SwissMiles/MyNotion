@@ -30,21 +30,30 @@ function seedState(): AppState {
   };
 }
 
-function load(): AppState {
+function storageKeyFor(userId: string | null): string {
+  return userId ? `${STORAGE_KEY}:u:${userId}` : STORAGE_KEY;
+}
+
+/** Apply data migrations to a state loaded from localStorage or the cloud. */
+export function normalizeState(state: AppState): AppState {
+  return {
+    ...state,
+    // migrate pre-Swiss-grading entries (score/outOf) to a 1–6 grade
+    grades: state.grades.map((g) => {
+      const old = g as unknown as { score?: number; outOf?: number; grade?: number };
+      if (old.grade === undefined && old.outOf && old.outOf > 0) {
+        return { ...g, grade: Math.min(6, Math.max(1, 5 * ((old.score ?? 0) / old.outOf) + 1)) };
+      }
+      return g;
+    }),
+  };
+}
+
+function load(userId: string | null): AppState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const state = JSON.parse(raw) as AppState;
-      // migrate pre-Swiss-grading entries (score/outOf) to a 1–6 grade
-      state.grades = state.grades.map((g) => {
-        const old = g as unknown as { score?: number; outOf?: number; grade?: number };
-        if (old.grade === undefined && old.outOf && old.outOf > 0) {
-          return { ...g, grade: Math.min(6, Math.max(1, 5 * ((old.score ?? 0) / old.outOf) + 1)) };
-        }
-        return g;
-      });
-      return state;
-    }
+    // fall back to the pre-auth key so existing local data is adopted on first sign-in
+    const raw = localStorage.getItem(storageKeyFor(userId)) ?? localStorage.getItem(STORAGE_KEY);
+    if (raw) return normalizeState(JSON.parse(raw) as AppState);
   } catch {
     // corrupted storage — start fresh
   }
@@ -149,12 +158,12 @@ function reducer(state: AppState, action: Action): AppState {
 const StateCtx = createContext<AppState | null>(null);
 const DispatchCtx = createContext<React.Dispatch<Action> | null>(null);
 
-export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, undefined, load);
+export function StoreProvider({ userId = null, children }: { userId?: string | null; children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(reducer, userId, load);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+    localStorage.setItem(storageKeyFor(userId), JSON.stringify(state));
+  }, [state, userId]);
 
   return (
     <StateCtx.Provider value={state}>

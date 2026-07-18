@@ -10,11 +10,13 @@ export function Sidebar({
   setView,
   theme,
   toggleTheme,
+  account,
 }: {
   view: View;
   setView: (v: View) => void;
   theme: string;
   toggleTheme: () => void;
+  account?: React.ReactNode;
 }) {
   const state = useAppState();
   const dispatch = useDispatch();
@@ -64,6 +66,7 @@ export function Sidebar({
         <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
           {theme === "dark" ? "☀️" : "🌙"}
         </button>
+        {account && <span className="sidebar-account">{account}</span>}
       </div>
 
       <div className="sem-picker">

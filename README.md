@@ -29,9 +29,13 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
   quarter grades (ETH-style); the semester average is credit-weighted. Failing
   grades are highlighted.
 - **Light & dark mode**, and **JSON export / import** for backups.
+- **Cloud sync & login (optional)** — sign in with Google or GitHub (no
+  passwords) via Clerk, and your data is stored in a free hosted Postgres
+  database (Supabase) so it survives cleared browsers and follows you across
+  devices. See [docs/CLOUD_SETUP.md](docs/CLOUD_SETUP.md).
 
-All data is stored locally in your browser (`localStorage`) — no account, no
-server, fully private.
+Without cloud configuration, all data is stored locally in your browser
+(`localStorage`) — no account, no server, fully private.
 
 ## Getting started
 
@@ -40,11 +44,16 @@ npm install
 npm run dev      # http://localhost:5173
 ```
 
+To enable login + cloud storage, follow [docs/CLOUD_SETUP.md](docs/CLOUD_SETUP.md)
+(about 15 minutes, both services are free).
+
 Production build: `npm run build` (output in `dist/`, deployable to any static
 host — GitHub Pages, Netlify, Vercel…).
 
 ## Tech
 
-React 18 + TypeScript + Vite, zero other runtime dependencies. State lives in a
-single reducer (`src/store.tsx`) persisted to `localStorage`; types are in
-`src/types.ts`, grade/GPA math in `src/lib.ts`.
+React 18 + TypeScript + Vite. State lives in a single reducer
+(`src/store.tsx`) persisted to `localStorage`; types are in `src/types.ts`,
+grade/GPA math in `src/lib.ts`. Optional cloud layer: Clerk for auth
+(`src/auth.tsx`), Supabase for storage with row-level security
+(`src/cloud.tsx`, `supabase/schema.sql`).

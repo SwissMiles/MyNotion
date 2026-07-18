@@ -370,3 +370,70 @@ input, select, textarea { font: inherit; color: inherit; }
 
 .muted { color: var(--text-3); font-size: 13px; }
 .spacer { flex: 1; }
+
+/* ---------- auth & cloud sync ---------- */
+
+.auth-screen {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-2);
+}
+
+.auth-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 40px 36px;
+  width: 340px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-logo { font-size: 40px; }
+
+.auth-card h1 { margin: 0; font-size: 24px; }
+
+.auth-card .muted { color: var(--text-2); margin: 0 0 10px; font-size: 14px; }
+
+.auth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.auth-btn:hover { background: var(--bg-2); }
+.auth-btn:disabled { opacity: 0.6; cursor: default; }
+
+.auth-error { color: var(--danger); font-size: 13px; margin: 4px 0 0; }
+
+.auth-fineprint { color: var(--text-3); font-size: 12px; margin: 8px 0 0; }
+
+.sidebar-account { display: inline-flex; align-items: center; margin-left: 2px; }
+
+.sync-badge {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 200;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.sync-badge.error { color: var(--danger); border-color: var(--danger); }
