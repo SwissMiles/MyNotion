@@ -40,13 +40,25 @@ export interface Task {
   notes: string;
 }
 
-export type BlockType = "text" | "h1" | "h2" | "todo" | "bullet" | "quote" | "divider" | "code";
+export type BlockType =
+  | "text"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "todo"
+  | "bullet"
+  | "numbered"
+  | "quote"
+  | "callout"
+  | "divider"
+  | "code";
 
 export interface Block {
   id: ID;
   type: BlockType;
   text: string;
   checked?: boolean; // for todo blocks
+  indent?: number; // 0 (default) … 4, set with Tab / Shift-Tab
 }
 
 export interface Page {
