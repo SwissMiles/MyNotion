@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { uid, useActiveSemester, useDispatch } from "../store";
 import type { Task, TaskKind, TaskPriority } from "../types";
 import { TASK_KIND_ICONS, dueLabel, sortByDue } from "../lib";
-import { Field, Modal } from "./ui";
+import { Field, Modal, useToast } from "./ui";
 
 export function TaskModal({
   task,
@@ -14,6 +14,7 @@ export function TaskModal({
   onClose: () => void;
 }) {
   const dispatch = useDispatch();
+  const toast = useToast();
   const { semester, courses } = useActiveSemester();
   const [title, setTitle] = useState(task?.title ?? "");
   const [courseId, setCourseId] = useState<string>(task?.courseId ?? defaultCourseId ?? "");
@@ -92,6 +93,7 @@ export function TaskModal({
             className="btn danger"
             onClick={() => {
               dispatch({ type: "deleteTask", id: task.id });
+              toast(`Deleted "${task.title}"`, { label: "Undo", run: () => dispatch({ type: "addTask", task }) });
               onClose();
             }}
           >
@@ -110,24 +112,40 @@ export function TaskModal({
 
 export function TaskRow({ task, onEdit, showCourse = true }: { task: Task; onEdit: (t: Task) => void; showCourse?: boolean }) {
   const dispatch = useDispatch();
+  const toast = useToast();
   const { courses } = useActiveSemester();
   const course = courses.find((c) => c.id === task.courseId);
   const due = dueLabel(task.due);
 
+  function toggle() {
+    dispatch({ type: "toggleTask", id: task.id });
+    if (!task.done) {
+      toast(`Completed "${task.title}" 🎉`, { label: "Undo", run: () => dispatch({ type: "toggleTask", id: task.id }) });
+    }
+  }
+
+  const hasMeta = (showCourse && course) || !task.done;
+
   return (
     <div className="task-row">
       <span className={`prio ${task.priority}`} />
-      <input type="checkbox" checked={task.done} onChange={() => dispatch({ type: "toggleTask", id: task.id })} />
+      <input type="checkbox" checked={task.done} onChange={toggle} />
       <span title={task.kind}>{TASK_KIND_ICONS[task.kind]}</span>
-      <span className={`title ${task.done ? "done" : ""}`} title={task.notes || task.title}>
-        {task.title}
-      </span>
-      {showCourse && course && (
-        <span className="course-tag" style={{ background: course.color }}>
-          {course.code || course.name}
-        </span>
-      )}
-      {!task.done && <span className={`pill ${due.tone}`}>{due.text}</span>}
+      <div className="task-main">
+        <button className={`title title-btn ${task.done ? "done" : ""}`} title={task.notes || task.title} onClick={() => onEdit(task)}>
+          {task.title}
+        </button>
+        {hasMeta && (
+          <span className="task-meta">
+            {showCourse && course && (
+              <span className="course-tag" style={{ background: course.color }}>
+                {course.code || course.name}
+              </span>
+            )}
+            {!task.done && <span className={`pill ${due.tone}`}>{due.text}</span>}
+          </span>
+        )}
+      </div>
       <span className="actions">
         <button className="icon-btn" onClick={() => onEdit(task)} title="Edit">✎</button>
       </span>
