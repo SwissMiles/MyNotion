@@ -1,4 +1,4 @@
-import type { Course, GradeEntry, Task } from "./types";
+import type { Block, Course, GradeEntry, Task } from "./types";
 
 export const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -85,6 +85,47 @@ export function semesterAverage(courses: Course[], grades: GradeEntry[]): number
     gradeSum += roundToQuarter(avg) * credits;
   }
   return creditSum > 0 ? gradeSum / creditSum : null;
+}
+
+/**
+ * Average grade needed on the not-yet-graded weight (assuming weights total
+ * 100%) so the final course average reaches `target`. Null when everything
+ * is already graded — there's nothing left to influence.
+ */
+export function requiredGrade(grades: GradeEntry[], target: number): { remaining: number; needed: number } | null {
+  const valid = grades.filter((g) => g.weight > 0 && g.grade >= 1 && g.grade <= 6);
+  const usedWeight = valid.reduce((s, g) => s + g.weight, 0);
+  const remaining = 100 - usedWeight;
+  if (remaining <= 0) return null;
+  const earned = valid.reduce((s, g) => s + g.grade * g.weight, 0);
+  return { remaining, needed: (target * 100 - earned) / remaining };
+}
+
+/** Serialize a note page to plain Markdown for export. */
+export function blocksToMarkdown(title: string, blocks: Block[]): string {
+  const isList = (b: Block) => b.type === "bullet" || b.type === "todo";
+  // drop trailing empty blocks so the file doesn't end in blank paragraphs
+  while (blocks.length > 0 && blocks[blocks.length - 1].type === "text" && blocks[blocks.length - 1].text === "") {
+    blocks = blocks.slice(0, -1);
+  }
+  let body = "";
+  blocks.forEach((b, i) => {
+    let line: string;
+    switch (b.type) {
+      case "h1": line = `# ${b.text}`; break;
+      case "h2": line = `## ${b.text}`; break;
+      case "bullet": line = `- ${b.text}`; break;
+      case "todo": line = `- [${b.checked ? "x" : " "}] ${b.text}`; break;
+      case "quote": line = `> ${b.text}`; break;
+      case "code": line = "```\n" + b.text + "\n```"; break;
+      case "divider": line = "---"; break;
+      default: line = b.text;
+    }
+    // adjacent list items stay in one list; everything else gets a blank line
+    const sep = i === 0 ? "" : isList(b) && isList(blocks[i - 1]) ? "\n" : "\n\n";
+    body += sep + line;
+  });
+  return `# ${title || "Untitled"}\n\n${body}\n`;
 }
 
 export const TASK_KIND_ICONS: Record<string, string> = {

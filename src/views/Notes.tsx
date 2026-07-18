@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { uid, useActiveSemester, useAppState, useDispatch } from "../store";
+import { blocksToMarkdown } from "../lib";
 import type { Page } from "../types";
 import type { View } from "../App";
 import { BlockEditor } from "../components/BlockEditor";
@@ -108,6 +109,17 @@ export function PageView({ pageId, onBack }: { pageId: string; onBack: () => voi
 
   const course = state.courses.find((c) => c.id === page.courseId);
 
+  function exportMarkdown() {
+    if (!page) return;
+    const blob = new Blob([blocksToMarkdown(page.title, page.blocks)], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(page.title || "untitled").replace(/[\\/:*?"<>|]+/g, "-")}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="page-wrap">
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
@@ -118,6 +130,9 @@ export function PageView({ pageId, onBack }: { pageId: string; onBack: () => voi
           </span>
         )}
         <span className="spacer" />
+        <button className="btn small ghost" onClick={exportMarkdown} title="Download this page as Markdown">
+          ⬇ Export .md
+        </button>
         <button
           className="btn small ghost danger"
           onClick={() => {

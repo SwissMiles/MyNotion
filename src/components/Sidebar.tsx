@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { COURSE_COLORS, uid, useActiveSemester, useAppState, useDispatch } from "../store";
-import type { Course, CourseMeeting, Semester } from "../types";
+import type { AppState, Course, CourseMeeting, Semester } from "../types";
 import { DAY_NAMES } from "../lib";
 import { Field, Modal } from "./ui";
 import type { View } from "../App";
@@ -10,11 +10,13 @@ export function Sidebar({
   setView,
   theme,
   toggleTheme,
+  openSearch,
 }: {
   view: View;
   setView: (v: View) => void;
   theme: string;
   toggleTheme: () => void;
+  openSearch: () => void;
 }) {
   const state = useAppState();
   const dispatch = useDispatch();
@@ -41,7 +43,22 @@ export function Sidebar({
       try {
         const parsed = JSON.parse(text);
         if (!parsed || !Array.isArray(parsed.semesters)) throw new Error("bad format");
-        dispatch({ type: "importState", state: parsed });
+        // normalize so a backup missing optional arrays can't break the app
+        const next: AppState = {
+          semesters: parsed.semesters,
+          activeSemesterId: parsed.activeSemesterId ?? parsed.semesters[0]?.id ?? null,
+          courses: Array.isArray(parsed.courses) ? parsed.courses : [],
+          tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
+          pages: Array.isArray(parsed.pages) ? parsed.pages : [],
+          grades: Array.isArray(parsed.grades) ? parsed.grades : [],
+        };
+        const ok = confirm(
+          `Import this backup?\n\nIt contains ${next.semesters.length} semester(s), ` +
+            `${next.courses.length} course(s), ${next.pages.length} page(s), ` +
+            `${next.tasks.length} task(s) and ${next.grades.length} grade(s).\n\n` +
+            "This will replace everything currently in MyNotion.",
+        );
+        if (ok) dispatch({ type: "importState", state: next });
       } catch {
         alert("That file doesn't look like a MyNotion backup.");
       }
@@ -83,6 +100,11 @@ export function Sidebar({
       </div>
 
       <nav className="nav-section">
+        <button className="nav-item" onClick={openSearch}>
+          <span>🔍</span>
+          <span className="label">Search</span>
+          <span className="count">{navigator.platform.toUpperCase().includes("MAC") ? "⌘K" : "Ctrl K"}</span>
+        </button>
         {mainNav.map((item) => (
           <button
             key={item.key}

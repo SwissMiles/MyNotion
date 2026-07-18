@@ -368,5 +368,57 @@ input, select, textarea { font: inherit; color: inherit; }
 }
 .tab.active { color: var(--text); font-weight: 600; border-bottom-color: var(--text); }
 
+/* ---------- Quick search ---------- */
+.quick-search { padding: 8px; }
+.quick-search input {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  font-size: 16px;
+  outline: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+}
+.qs-results { max-height: 50vh; overflow-y: auto; margin-top: 6px; }
+.qs-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+}
+.qs-item.active { background: var(--bg-3); }
+.qs-title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qs-meta {
+  margin-left: auto;
+  color: var(--text-3);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 45%;
+  flex-shrink: 0;
+}
+.qs-hint { color: var(--text-3); font-size: 13px; text-align: center; padding: 18px 12px; }
+
+/* ---------- Grade target hint ---------- */
+.target-hint {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 13.5px;
+  margin: 0 0 14px;
+}
+
 .muted { color: var(--text-3); font-size: 13px; }
 .spacer { flex: 1; }

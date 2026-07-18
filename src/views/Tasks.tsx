@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useActiveSemester } from "../store";
+import { daysUntil } from "../lib";
 import { TaskList, TaskModal } from "../components/tasks";
 import type { Task, TaskKind } from "../types";
 
@@ -54,13 +55,51 @@ export function TasksView() {
         <button className="btn primary small" onClick={() => setModalTask("new")}>+ New task</button>
       </div>
 
-      <div className="card" style={{ padding: 6 }}>
-        <TaskList tasks={filtered} onEdit={(t) => setModalTask(t)} />
-      </div>
+      {filter === "done" ? (
+        <div className="card" style={{ padding: 6 }}>
+          <TaskList tasks={filtered} onEdit={(t) => setModalTask(t)} emptyText="Nothing finished yet." />
+        </div>
+      ) : (
+        <GroupedTasks tasks={filtered} showDone={filter === "all"} onEdit={(t) => setModalTask(t)} />
+      )}
 
       {modalTask !== null && (
         <TaskModal task={modalTask === "new" ? null : modalTask} onClose={() => setModalTask(null)} />
       )}
+    </div>
+  );
+}
+
+/** Open tasks bucketed by urgency, with an optional Done section at the end. */
+function GroupedTasks({ tasks, showDone, onEdit }: { tasks: Task[]; showDone: boolean; onEdit: (t: Task) => void }) {
+  const open = tasks.filter((t) => !t.done);
+  const done = tasks.filter((t) => t.done);
+  const groups = [
+    { label: "Overdue", tasks: open.filter((t) => daysUntil(t.due) < 0) },
+    { label: "Today", tasks: open.filter((t) => daysUntil(t.due) === 0) },
+    { label: "This week", tasks: open.filter((t) => daysUntil(t.due) >= 1 && daysUntil(t.due) <= 7) },
+    { label: "Later", tasks: open.filter((t) => daysUntil(t.due) > 7) },
+    ...(showDone ? [{ label: "Done", tasks: done }] : []),
+  ].filter((g) => g.tasks.length > 0);
+
+  if (groups.length === 0) {
+    return <div className="empty">Nothing here — enjoy the free time 🎉</div>;
+  }
+
+  return (
+    <div>
+      {groups.map((g) => (
+        <div key={g.label}>
+          <div className="section-title" style={{ margin: "16px 0 8px" }}>
+            <span>
+              {g.label} <span className="muted">({g.tasks.length})</span>
+            </span>
+          </div>
+          <div className="card" style={{ padding: 6 }}>
+            <TaskList tasks={g.tasks} onEdit={onEdit} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

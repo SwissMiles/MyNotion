@@ -16,7 +16,11 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
   progress, what's due soon and today's classes.
 - **Assignments & Exams** — tasks with type (assignment / exam / reading /
   project), due date, priority and course. Filter by status, type or course;
+  the list is grouped by urgency (Overdue / Today / This week / Later) and
   overdue and due-soon items are highlighted.
+- **Quick search** — press <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd> anywhere to find
+  courses, note pages (including their content) and tasks in the current
+  semester.
 - **Weekly timetable** — auto-generated from course meeting times, color-coded,
   weekend columns appear only if you have weekend classes.
 - **Notion-style notes** — block editor with markdown shortcuts:
@@ -27,8 +31,11 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
   4.0 = pass). Enter grades directly or from points using the standard formula
   (5 · points ⁄ max + 1). Course grades are weighted averages rounded to
   quarter grades (ETH-style); the semester average is credit-weighted. Failing
-  grades are highlighted.
-- **Light & dark mode**, and **JSON export / import** for backups.
+  grades are highlighted, and while a course is partially graded it shows the
+  average you still need on the remaining weight to pass.
+- **Light & dark mode**, **Markdown export** for any note page, and
+  **JSON export / import** for backups (import shows what the backup contains
+  before replacing anything).
 
 All data is stored locally in your browser (`localStorage`) — no account, no
 server, fully private.

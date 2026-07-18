@@ -7,6 +7,7 @@ import { Timetable } from "./views/Timetable";
 import { GradesView } from "./views/Grades";
 import { NotesView, PageView } from "./views/Notes";
 import { CourseView, type CourseTab } from "./views/Course";
+import { QuickSearch } from "./components/QuickSearch";
 
 export type View =
   | { kind: "dashboard" }
@@ -23,11 +24,23 @@ export default function App() {
   const [view, setViewRaw] = useState<View>({ kind: "dashboard" });
   const [lastListView, setLastListView] = useState<View>({ kind: "notes" });
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) ?? "light");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   function setView(v: View) {
     if (v.kind !== "page") setLastListView(v);
@@ -42,6 +55,7 @@ export default function App() {
           setView={setView}
           theme={theme}
           toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
+          openSearch={() => setSearchOpen(true)}
         />
         <main className="main">
           {view.kind === "dashboard" && <Dashboard setView={setView} />}
@@ -52,6 +66,7 @@ export default function App() {
           {view.kind === "course" && <CourseView courseId={view.courseId} tab={view.tab} setView={setView} key={view.courseId + (view.tab ?? "")} />}
           {view.kind === "page" && <PageView pageId={view.pageId} onBack={() => setViewRaw(lastListView)} />}
         </main>
+        {searchOpen && <QuickSearch setView={setView} onClose={() => setSearchOpen(false)} />}
       </div>
     </StoreProvider>
   );
