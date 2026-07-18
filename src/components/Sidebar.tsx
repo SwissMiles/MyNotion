@@ -3,6 +3,7 @@ import { COURSE_COLORS, uid, useActiveSemester, useAppState, useDispatch } from 
 import type { Course, CourseMeeting, Semester } from "../types";
 import { DAY_NAMES } from "../lib";
 import { Field, Modal } from "./ui";
+import { SEARCH_SHORTCUT } from "./QuickFind";
 import type { View } from "../App";
 
 export function Sidebar({
@@ -10,11 +11,13 @@ export function Sidebar({
   setView,
   theme,
   toggleTheme,
+  openSearch,
 }: {
   view: View;
   setView: (v: View) => void;
   theme: string;
   toggleTheme: () => void;
+  openSearch: () => void;
 }) {
   const state = useAppState();
   const dispatch = useDispatch();
@@ -63,6 +66,14 @@ export function Sidebar({
         <span className="name">MyNotion</span>
         <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
           {theme === "dark" ? "☀️" : "🌙"}
+        </button>
+      </div>
+
+      <div className="nav-section" style={{ paddingBottom: 0 }}>
+        <button className="nav-item" onClick={openSearch}>
+          <span>🔍</span>
+          <span className="label">Search</span>
+          <kbd>{SEARCH_SHORTCUT}</kbd>
         </button>
       </div>
 

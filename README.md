@@ -8,6 +8,14 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
 
 ## Features
 
+- **Quick Find (⌘K / Ctrl K)** — Notion-style search palette. Full-text search
+  across every page (titles *and* note content), task, course and semester —
+  including semesters you're not currently in. Matches are highlighted with a
+  snippet of the surrounding text; opening a result from another semester
+  switches to it automatically. With an empty query it shows recently opened
+  pages, navigation and quick actions (new page, switch semester, toggle
+  theme), and any query can be turned into a new page with that title.
+  Fully keyboard-driven: ↑/↓ to move, ↵ to open, esc to close (⌘P works too).
 - **Semesters** — switch between semesters; every course, task, note and grade
   is scoped to one. Dashboard shows how far through the semester you are.
 - **Courses** — code, instructor, credits, a color, and weekly meeting times
