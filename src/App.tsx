@@ -17,6 +17,7 @@ import { NotesView, PageView } from "./views/Notes";
 import { CourseView, type CourseTab } from "./views/Course";
 import { SignInScreen } from "./auth";
 import { CloudSync } from "./cloud";
+import { SearchModal } from "./components/Search";
 import { clerkConfigured, cloudConfigured } from "./config";
 
 export type View =
@@ -92,11 +93,23 @@ function Workspace({
 }) {
   const [view, setViewRaw] = useState<View>({ kind: "dashboard" });
   const [lastListView, setLastListView] = useState<View>({ kind: "notes" });
+  const [showSearch, setShowSearch] = useState(false);
 
   function setView(v: View) {
     if (v.kind !== "page") setLastListView(v);
     setViewRaw(v);
   }
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setShowSearch((v) => !v);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <StoreProvider key={userId ?? "local"} userId={userId}>
@@ -104,6 +117,7 @@ function Workspace({
       {userId && !cloudConfigured && (
         <div className="sync-badge error">⚠️ Supabase not configured — data is only on this device</div>
       )}
+      {showSearch && <SearchModal onClose={() => setShowSearch(false)} setView={setView} />}
       <div className="app">
         <Sidebar
           view={view}
@@ -111,6 +125,7 @@ function Workspace({
           theme={theme}
           toggleTheme={toggleTheme}
           account={account}
+          onSearch={() => setShowSearch(true)}
         />
         <main className="main">
           {view.kind === "dashboard" && <Dashboard setView={setView} />}

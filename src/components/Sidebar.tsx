@@ -11,12 +11,14 @@ export function Sidebar({
   theme,
   toggleTheme,
   account,
+  onSearch,
 }: {
   view: View;
   setView: (v: View) => void;
   theme: string;
   toggleTheme: () => void;
   account?: React.ReactNode;
+  onSearch?: () => void;
 }) {
   const state = useAppState();
   const dispatch = useDispatch();
@@ -86,6 +88,13 @@ export function Sidebar({
       </div>
 
       <nav className="nav-section">
+        {onSearch && (
+          <button className="nav-item" onClick={onSearch}>
+            <span>🔍</span>
+            <span className="label">Search</span>
+            <span className="count kbd-hint">⌘K</span>
+          </button>
+        )}
         {mainNav.map((item) => (
           <button
             key={item.key}

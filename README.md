@@ -21,8 +21,12 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
   weekend columns appear only if you have weekend classes.
 - **Notion-style notes** — block editor with markdown shortcuts:
   `# ` heading, `## ` subheading, `- ` bullet, `[] ` to-do, `> ` quote,
-  ` ``` ` code, `---` divider. Enter continues lists, Backspace exits them,
-  ⌥↑/⌥↓ moves blocks. Pages can be general or attached to a course.
+  ` ``` ` code, `---` divider, `/image` for images (or just paste one).
+  Enter continues lists, Backspace exits them, ⌥↑/⌥↓ or dragging the ⋮⋮
+  handle moves blocks. URLs in a block get an open-link button. Pages can
+  be general or attached to a course.
+- **Search everywhere** — ⌘K/Ctrl+K searches every note and task across
+  all semesters and jumps straight to the result.
 - **Grades (Swiss system)** — grades on the Swiss 1–6 scale (6 best,
   4.0 = pass). Enter grades directly or from points using the standard formula
   (5 · points ⁄ max + 1). Course grades are weighted averages rounded to
