@@ -5,7 +5,11 @@ import type { Page } from "../types";
 import type { View } from "../App";
 import { BlockEditor } from "../components/BlockEditor";
 
-const PAGE_ICONS = ["📄", "📝", "📚", "🧪", "💡", "🧠", "🗂️", "⭐"];
+const PAGE_ICONS = [
+  "📄", "📝", "📚", "📖", "🧪", "💡", "🧠", "🗂️",
+  "⭐", "🎯", "📌", "🔬", "🧮", "🌍", "🎨", "🎵",
+  "💻", "⚗️", "📈", "🏛️", "✏️", "🗓️", "🔖", "🚀",
+];
 
 export function newPage(semesterId: string, courseId: string | null, title = ""): Page {
   return {
@@ -121,8 +125,8 @@ export function PageView({ pageId, onBack }: { pageId: string; onBack: () => voi
   }
 
   return (
-    <div className="page-wrap">
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
+    <div className="page-wrap note-page">
+      <div className="note-toolbar">
         <button className="btn small ghost" onClick={onBack}>← Back</button>
         {course && (
           <span className="pill" style={{ background: course.color, color: "#fff" }}>
@@ -130,6 +134,7 @@ export function PageView({ pageId, onBack }: { pageId: string; onBack: () => voi
           </span>
         )}
         <span className="spacer" />
+        <span className="muted note-updated">Edited {new Date(page.updatedAt).toLocaleDateString()}</span>
         <button className="btn small ghost" onClick={exportMarkdown} title="Download this page as Markdown">
           ⬇ Export .md
         </button>
@@ -142,32 +147,16 @@ export function PageView({ pageId, onBack }: { pageId: string; onBack: () => voi
             }
           }}
         >
-          Delete page
+          Delete
         </button>
       </div>
 
-      <div style={{ position: "relative" }}>
-        <h1 className="page-title" style={{ marginBottom: 12 }}>
-          <button
-            className="icon-btn"
-            style={{ fontSize: 28, padding: "0 4px" }}
-            onClick={() => setShowIcons((v) => !v)}
-            title="Change icon"
-          >
-            {page.icon}
-          </button>
-          <input
-            value={page.title}
-            placeholder="Untitled"
-            onChange={(e) => dispatch({ type: "updatePageMeta", id: page.id, title: e.target.value })}
-            style={{
-              border: "none", background: "none", outline: "none",
-              fontSize: 32, fontWeight: 700, flex: 1, padding: 0,
-            }}
-          />
-        </h1>
+      <div className="note-head">
+        <button className="note-icon" onClick={() => setShowIcons((v) => !v)} title="Change icon">
+          {page.icon}
+        </button>
         {showIcons && (
-          <div className="card" style={{ position: "absolute", zIndex: 10, display: "flex", gap: 6, padding: 8 }}>
+          <div className="icon-picker">
             {PAGE_ICONS.map((ic) => (
               <button
                 key={ic}
@@ -183,6 +172,12 @@ export function PageView({ pageId, onBack }: { pageId: string; onBack: () => voi
             ))}
           </div>
         )}
+        <input
+          className="page-title-input"
+          value={page.title}
+          placeholder="Untitled"
+          onChange={(e) => dispatch({ type: "updatePageMeta", id: page.id, title: e.target.value })}
+        />
       </div>
 
       <BlockEditor blocks={page.blocks} onChange={(blocks) => dispatch({ type: "setBlocks", pageId: page.id, blocks })} />

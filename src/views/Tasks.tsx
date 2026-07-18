@@ -1,10 +1,28 @@
 import React, { useState } from "react";
 import { useActiveSemester } from "../store";
-import { daysUntil } from "../lib";
-import { TaskList, TaskModal } from "../components/tasks";
+import { TaskList, TaskModal, TaskRow } from "../components/tasks";
+import { daysUntil, sortByDue } from "../lib";
 import type { Task, TaskKind } from "../types";
 
 type Filter = "open" | "done" | "all";
+
+function groupOpenTasks(tasks: Task[]): { label: string; tone?: "overdue" | "soon"; tasks: Task[] }[] {
+  const sorted = sortByDue(tasks);
+  const groups = [
+    { label: "Overdue", tone: "overdue" as const, tasks: [] as Task[] },
+    { label: "Today", tone: "soon" as const, tasks: [] as Task[] },
+    { label: "This week", tasks: [] as Task[] },
+    { label: "Later", tasks: [] as Task[] },
+  ];
+  for (const t of sorted) {
+    const d = daysUntil(t.due);
+    if (d < 0) groups[0].tasks.push(t);
+    else if (d === 0) groups[1].tasks.push(t);
+    else if (d <= 7) groups[2].tasks.push(t);
+    else groups[3].tasks.push(t);
+  }
+  return groups.filter((g) => g.tasks.length > 0);
+}
 
 export function TasksView() {
   const { semester, tasks, courses } = useActiveSemester();
@@ -16,23 +34,25 @@ export function TasksView() {
   if (!semester) return null;
 
   const filtered = tasks.filter((t) => {
-    if (filter === "open" && t.done) return false;
-    if (filter === "done" && !t.done) return false;
     if (kindFilter !== "all" && t.kind !== kindFilter) return false;
     if (courseFilter !== "all" && (t.courseId ?? "") !== courseFilter) return false;
     return true;
   });
+  const open = filtered.filter((t) => !t.done);
+  const done = filtered.filter((t) => t.done);
+  const groups = filter === "done" ? [] : groupOpenTasks(open);
+  const showDone = filter !== "open";
 
   return (
     <div className="page-wrap">
       <h1 className="page-title">✅ Assignments & Exams</h1>
       <p className="page-sub">Everything due this semester, sorted by deadline.</p>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
+      <div className="toolbar">
         <div className="tabs" style={{ marginBottom: 0, border: "none" }}>
           {(["open", "done", "all"] as Filter[]).map((f) => (
             <button key={f} className={`tab ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>
-              {f === "open" ? "Open" : f === "done" ? "Done" : "All"}
+              {f === "open" ? `Open (${open.length})` : f === "done" ? `Done (${done.length})` : "All"}
             </button>
           ))}
         </div>
@@ -55,51 +75,39 @@ export function TasksView() {
         <button className="btn primary small" onClick={() => setModalTask("new")}>+ New task</button>
       </div>
 
-      {filter === "done" ? (
-        <div className="card" style={{ padding: 6 }}>
-          <TaskList tasks={filtered} onEdit={(t) => setModalTask(t)} emptyText="Nothing finished yet." />
+      {groups.length === 0 && !(showDone && done.length > 0) && (
+        <div className="empty">Nothing here — enjoy the free time 🎉</div>
+      )}
+
+      {groups.map((g) => (
+        <div key={g.label}>
+          <div className="section-title">
+            <span className={g.tone ? `group-label ${g.tone}` : "group-label"}>
+              {g.label} · {g.tasks.length}
+            </span>
+          </div>
+          <div className="card list-card">
+            {g.tasks.map((t) => (
+              <TaskRow key={t.id} task={t} onEdit={(x) => setModalTask(x)} />
+            ))}
+          </div>
         </div>
-      ) : (
-        <GroupedTasks tasks={filtered} showDone={filter === "all"} onEdit={(t) => setModalTask(t)} />
+      ))}
+
+      {showDone && done.length > 0 && (
+        <div>
+          <div className="section-title">
+            <span className="group-label">Done · {done.length}</span>
+          </div>
+          <div className="card list-card">
+            <TaskList tasks={done} onEdit={(t) => setModalTask(t)} />
+          </div>
+        </div>
       )}
 
       {modalTask !== null && (
         <TaskModal task={modalTask === "new" ? null : modalTask} onClose={() => setModalTask(null)} />
       )}
-    </div>
-  );
-}
-
-/** Open tasks bucketed by urgency, with an optional Done section at the end. */
-function GroupedTasks({ tasks, showDone, onEdit }: { tasks: Task[]; showDone: boolean; onEdit: (t: Task) => void }) {
-  const open = tasks.filter((t) => !t.done);
-  const done = tasks.filter((t) => t.done);
-  const groups = [
-    { label: "Overdue", tasks: open.filter((t) => daysUntil(t.due) < 0) },
-    { label: "Today", tasks: open.filter((t) => daysUntil(t.due) === 0) },
-    { label: "This week", tasks: open.filter((t) => daysUntil(t.due) >= 1 && daysUntil(t.due) <= 7) },
-    { label: "Later", tasks: open.filter((t) => daysUntil(t.due) > 7) },
-    ...(showDone ? [{ label: "Done", tasks: done }] : []),
-  ].filter((g) => g.tasks.length > 0);
-
-  if (groups.length === 0) {
-    return <div className="empty">Nothing here — enjoy the free time 🎉</div>;
-  }
-
-  return (
-    <div>
-      {groups.map((g) => (
-        <div key={g.label}>
-          <div className="section-title" style={{ margin: "16px 0 8px" }}>
-            <span>
-              {g.label} <span className="muted">({g.tasks.length})</span>
-            </span>
-          </div>
-          <div className="card" style={{ padding: 6 }}>
-            <TaskList tasks={g.tasks} onEdit={onEdit} />
-          </div>
-        </div>
-      ))}
     </div>
   );
 }

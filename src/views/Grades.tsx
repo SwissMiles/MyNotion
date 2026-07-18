@@ -105,6 +105,7 @@ export function CourseGrades({ course }: { course: Course }) {
       {cg.length === 0 ? (
         <div className="empty">No grades yet. Add your first one — e.g. "Quiz 1, grade 5.5, weight 10%".</div>
       ) : (
+        <div className="table-scroll">
         <table className="grade-table">
           <thead>
             <tr>
@@ -132,6 +133,7 @@ export function CourseGrades({ course }: { course: Course }) {
             ))}
           </tbody>
         </table>
+        </div>
       )}
 
       {editing !== null && (

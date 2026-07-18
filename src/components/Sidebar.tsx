@@ -10,13 +10,19 @@ export function Sidebar({
   setView,
   theme,
   toggleTheme,
+  open,
+  onClose,
   openSearch,
+  account,
 }: {
   view: View;
   setView: (v: View) => void;
   theme: string;
   toggleTheme: () => void;
+  open: boolean;
+  onClose: () => void;
   openSearch: () => void;
+  account?: React.ReactNode;
 }) {
   const state = useAppState();
   const dispatch = useDispatch();
@@ -74,12 +80,30 @@ export function Sidebar({
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${open ? "open" : ""}`}>
       <div className="sidebar-head">
         <span className="logo">🎓</span>
         <span className="name">MyNotion</span>
         <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
           {theme === "dark" ? "☀️" : "🌙"}
+        </button>
+        {account && <span className="sidebar-account">{account}</span>}
+        <button className="icon-btn sidebar-close" onClick={onClose} aria-label="Close menu">
+          ✕
+        </button>
+      </div>
+
+      <div className="nav-section">
+        <button
+          className="nav-item"
+          onClick={() => {
+            onClose();
+            openSearch();
+          }}
+        >
+          <span>🔍</span>
+          <span className="label">Search</span>
+          <span className="count kbd-hint">⌘K</span>
         </button>
       </div>
 
@@ -100,11 +124,6 @@ export function Sidebar({
       </div>
 
       <nav className="nav-section">
-        <button className="nav-item" onClick={openSearch}>
-          <span>🔍</span>
-          <span className="label">Search</span>
-          <span className="count">{navigator.platform.toUpperCase().includes("MAC") ? "⌘K" : "Ctrl K"}</span>
-        </button>
         {mainNav.map((item) => (
           <button
             key={item.key}
@@ -312,7 +331,7 @@ export function CourseModal({
       <Field label="Weekly meetings">
         <div>
           {meetings.map((m, i) => (
-            <div key={i} className="form-cols" style={{ marginBottom: 6, alignItems: "center" }}>
+            <div key={i} className="meeting-row">
               <select value={m.day} onChange={(e) => setMeeting(i, { day: Number(e.target.value) })}>
                 {DAY_NAMES.map((d, di) => (
                   <option key={di} value={di}>{d}</option>

@@ -18,15 +18,16 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
   project), due date, priority and course. Filter by status, type or course;
   the list is grouped by urgency (Overdue / Today / This week / Later) and
   overdue and due-soon items are highlighted.
-- **Quick search** — press <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd> anywhere to find
-  courses, note pages (including their content) and tasks in the current
-  semester.
 - **Weekly timetable** — auto-generated from course meeting times, color-coded,
   weekend columns appear only if you have weekend classes.
 - **Notion-style notes** — block editor with markdown shortcuts:
   `# ` heading, `## ` subheading, `- ` bullet, `[] ` to-do, `> ` quote,
-  ` ``` ` code, `---` divider. Enter continues lists, Backspace exits them,
-  ⌥↑/⌥↓ moves blocks. Pages can be general or attached to a course.
+  ` ``` ` code, `---` divider, `/image` for images (or just paste one).
+  Enter continues lists, Backspace exits them, ⌥↑/⌥↓ or dragging the ⋮⋮
+  handle moves blocks. URLs in a block get an open-link button. Pages can
+  be general or attached to a course.
+- **Search everywhere** — ⌘K/Ctrl+K searches every note and task across
+  all semesters and jumps straight to the result.
 - **Grades (Swiss system)** — grades on the Swiss 1–6 scale (6 best,
   4.0 = pass). Enter grades directly or from points using the standard formula
   (5 · points ⁄ max + 1). Course grades are weighted averages rounded to
@@ -36,9 +37,13 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
 - **Light & dark mode**, **Markdown export** for any note page, and
   **JSON export / import** for backups (import shows what the backup contains
   before replacing anything).
+- **Cloud sync & login (optional)** — sign in with Google or GitHub (no
+  passwords) via Clerk, and your data is stored in a free hosted Postgres
+  database (Supabase) so it survives cleared browsers and follows you across
+  devices. See [docs/CLOUD_SETUP.md](docs/CLOUD_SETUP.md).
 
-All data is stored locally in your browser (`localStorage`) — no account, no
-server, fully private.
+Without cloud configuration, all data is stored locally in your browser
+(`localStorage`) — no account, no server, fully private.
 
 ## Getting started
 
@@ -47,11 +52,16 @@ npm install
 npm run dev      # http://localhost:5173
 ```
 
+To enable login + cloud storage, follow [docs/CLOUD_SETUP.md](docs/CLOUD_SETUP.md)
+(about 15 minutes, both services are free).
+
 Production build: `npm run build` (output in `dist/`, deployable to any static
 host — GitHub Pages, Netlify, Vercel…).
 
 ## Tech
 
-React 18 + TypeScript + Vite, zero other runtime dependencies. State lives in a
-single reducer (`src/store.tsx`) persisted to `localStorage`; types are in
-`src/types.ts`, grade/GPA math in `src/lib.ts`.
+React 18 + TypeScript + Vite. State lives in a single reducer
+(`src/store.tsx`) persisted to `localStorage`; types are in `src/types.ts`,
+grade/GPA math in `src/lib.ts`. Optional cloud layer: Clerk for auth
+(`src/auth.tsx`), Supabase for storage with row-level security
+(`src/cloud.tsx`, `supabase/schema.sql`).
