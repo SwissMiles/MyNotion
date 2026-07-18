@@ -29,10 +29,11 @@ const MENU_OPTIONS: MenuOption[] = [
   { type: "quote", icon: "❝", label: "Quote", desc: "Capture a quote", keywords: "quote blockquote citation" },
   { type: "callout", icon: "💡", label: "Callout", desc: "Make writing stand out", keywords: "callout highlight info note" },
   { type: "code", icon: "</>", label: "Code", desc: "Capture a code snippet", keywords: "code snippet monospace" },
+  { type: "image", icon: "🖼", label: "Image", desc: "Upload or embed an image", keywords: "image picture photo img upload" },
   { type: "divider", icon: "―", label: "Divider", desc: "Visually divide blocks", keywords: "divider separator line hr rule" },
 ];
 
-const TURN_INTO = MENU_OPTIONS.filter((o) => o.type !== "divider");
+const TURN_INTO = MENU_OPTIONS.filter((o) => o.type !== "divider" && o.type !== "image");
 
 const MD_SHORTCUTS: [string, BlockType][] = [
   ["# ", "h1"],
@@ -49,6 +50,42 @@ const MD_SHORTCUTS: [string, BlockType][] = [
 
 function isListType(t: BlockType) {
   return t === "bullet" || t === "todo" || t === "numbered";
+}
+
+/** Block types that have no editable textarea. */
+function isNonText(t: BlockType) {
+  return t === "divider" || t === "image";
+}
+
+const URL_RE = /https?:\/\/[^\s)]+/;
+
+/** Read an image file into a data URI, downscaling big photos so state stays small. */
+async function fileToDataUri(file: File): Promise<string> {
+  const MAX_DIM = 1400;
+  const KEEP_ORIGINAL_BYTES = 300 * 1024;
+  const readAsDataUri = () =>
+    new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result as string);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  const original = await readAsDataUri();
+  if (file.size <= KEEP_ORIGINAL_BYTES) return original;
+
+  return new Promise<string>((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = () => resolve(original);
+    img.src = original;
+  });
 }
 
 export function BlockEditor({ blocks, onChange }: { blocks: Block[]; onChange: (blocks: Block[]) => void }) {
@@ -155,7 +192,7 @@ export function BlockEditor({ blocks, onChange }: { blocks: Block[]; onChange: (
       return;
     }
     const neighbor = list[index - 1] ?? list[index + 1];
-    if (neighbor && neighbor.type !== "divider") pendingFocus.current = { id: neighbor.id };
+    if (neighbor && !isNonText(neighbor.type)) pendingFocus.current = { id: neighbor.id };
     onChange(list.filter((_, i) => i !== index));
   }
 
@@ -209,9 +246,19 @@ export function BlockEditor({ blocks, onChange }: { blocks: Block[]; onChange: (
       onChange(next);
     } else {
       onChange(list.map((x) => (x.id === b.id ? { ...x, type: opt.type, text: kept } : x)));
-      pendingFocus.current = { id: b.id, caret: kept.length };
+      // image blocks have no textarea to focus — the picker takes over
+      pendingFocus.current = opt.type === "image" ? null : { id: b.id, caret: kept.length };
     }
     setMenu(null);
+  }
+
+  async function handlePaste(e: React.ClipboardEvent, index: number) {
+    const file = Array.from(e.clipboardData.files).find((f) => f.type.startsWith("image/"));
+    if (!file) return;
+    e.preventDefault();
+    const url = await fileToDataUri(file);
+    const nb: Block = { id: uid(), type: "image", text: "", url };
+    onChange([...list.slice(0, index + 1), nb, ...list.slice(index + 1)]);
   }
 
   // ----- typing -----
@@ -249,7 +296,7 @@ export function BlockEditor({ blocks, onChange }: { blocks: Block[]; onChange: (
 
   function focusNeighbor(index: number, dir: -1 | 1, caret: "start" | "end") {
     for (let j = index + dir; j >= 0 && j < list.length; j += dir) {
-      if (list[j].type === "divider") continue;
+      if (isNonText(list[j].type)) continue;
       const el = areaRefs.current.get(list[j].id);
       if (el) {
         el.focus();
@@ -337,6 +384,8 @@ export function BlockEditor({ blocks, onChange }: { blocks: Block[]; onChange: (
         onChange(list.filter((x) => x.id !== prev.id));
         return;
       }
+      // never delete an image by backspacing into it — use its ✕ or block menu
+      if (prev.type === "image") return;
       pendingFocus.current = { id: prev.id, caret: prev.text.length };
       onChange(
         list
@@ -522,6 +571,15 @@ export function BlockEditor({ blocks, onChange }: { blocks: Block[]; onChange: (
               <div className="block-body">
                 <hr className="block-divider" />
               </div>
+            ) : b.type === "image" ? (
+              <div className="block-body">
+                <ImageBlock
+                  block={b}
+                  onSetUrl={(url) => update(b.id, { url })}
+                  onCaption={(t) => update(b.id, { text: t })}
+                  onRemove={() => removeAt(i)}
+                />
+              </div>
             ) : (
               <div className="block-body">
                 {b.type === "todo" && (
@@ -550,7 +608,19 @@ export function BlockEditor({ blocks, onChange }: { blocks: Block[]; onChange: (
                   onKeyDown={(e) => handleKey(e, b, i)}
                   onFocus={() => setFocusedId(b.id)}
                   onBlur={() => setFocusedId((f) => (f === b.id ? null : f))}
+                  onPaste={(e) => handlePaste(e, i)}
                 />
+                {b.type !== "code" && b.text.match(URL_RE) && (
+                  <a
+                    className="block-link"
+                    href={b.text.match(URL_RE)![0]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`Open ${b.text.match(URL_RE)![0]}`}
+                  >
+                    ↗
+                  </a>
+                )}
               </div>
             )}
 
@@ -617,5 +687,73 @@ export function BlockEditor({ blocks, onChange }: { blocks: Block[]; onChange: (
         </div>
       )}
     </div>
+  );
+}
+
+function ImageBlock({
+  block,
+  onSetUrl,
+  onCaption,
+  onRemove,
+}: {
+  block: Block;
+  onSetUrl: (url: string) => void;
+  onCaption: (t: string) => void;
+  onRemove: () => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [urlInput, setUrlInput] = useState("");
+
+  if (!block.url) {
+    return (
+      <div className="image-picker">
+        <button type="button" className="btn small" onClick={() => fileRef.current?.click()}>
+          📁 Upload image
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={async (e) => {
+            const f = e.target.files?.[0];
+            if (f) onSetUrl(await fileToDataUri(f));
+            e.target.value = "";
+          }}
+        />
+        <span className="muted">or</span>
+        <input
+          placeholder="Paste an image URL…"
+          value={urlInput}
+          onChange={(e) => setUrlInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && urlInput.trim()) onSetUrl(urlInput.trim());
+          }}
+        />
+        <button type="button" className="btn small" disabled={!urlInput.trim()} onClick={() => onSetUrl(urlInput.trim())}>
+          Add
+        </button>
+        <button type="button" className="icon-btn" title="Remove image block" onClick={onRemove}>
+          ✕
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <figure className="image-figure">
+      <img src={block.url} alt={block.text || "Note image"} />
+      <div className="image-tools">
+        <input
+          className="image-caption"
+          placeholder="Add a caption…"
+          value={block.text}
+          onChange={(e) => onCaption(e.target.value)}
+        />
+        <button type="button" className="icon-btn" title="Remove image" onClick={onRemove}>
+          ✕
+        </button>
+      </div>
+    </figure>
   );
 }

@@ -24,7 +24,14 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # Cloud login/sync keys (optional): set these under Settings →
+      # Secrets and variables → Actions (as variables or secrets).
+      # Without them the deployed app runs in local-only mode.
       - run: npm run build
+        env:
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.VITE_CLERK_PUBLISHABLE_KEY || secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY }}
       - uses: actions/configure-pages@v5
         with:
           enablement: true

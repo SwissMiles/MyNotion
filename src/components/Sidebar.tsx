@@ -13,6 +13,7 @@ export function Sidebar({
   open,
   onClose,
   openSearch,
+  account,
 }: {
   view: View;
   setView: (v: View) => void;
@@ -21,6 +22,7 @@ export function Sidebar({
   open: boolean;
   onClose: () => void;
   openSearch: () => void;
+  account?: React.ReactNode;
 }) {
   const state = useAppState();
   const dispatch = useDispatch();
@@ -70,6 +72,7 @@ export function Sidebar({
         <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
           {theme === "dark" ? "☀️" : "🌙"}
         </button>
+        {account && <span className="sidebar-account">{account}</span>}
         <button className="icon-btn sidebar-close" onClick={onClose} aria-label="Close menu">
           ✕
         </button>

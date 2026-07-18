@@ -1,4 +1,12 @@
 import React, { useEffect, useState } from "react";
+import {
+  AuthenticateWithRedirectCallback,
+  ClerkLoading,
+  SignedIn,
+  SignedOut,
+  UserButton,
+  useUser,
+} from "@clerk/clerk-react";
 import { StoreProvider } from "./store";
 import { Sidebar } from "./components/Sidebar";
 import { ToastProvider } from "./components/ui";
@@ -9,6 +17,9 @@ import { Timetable } from "./views/Timetable";
 import { GradesView } from "./views/Grades";
 import { NotesView, PageView } from "./views/Notes";
 import { CourseView, type CourseTab } from "./views/Course";
+import { SignInScreen } from "./auth";
+import { CloudSync } from "./cloud";
+import { clerkConfigured, cloudConfigured } from "./config";
 
 export type View =
   | { kind: "dashboard" }
@@ -31,21 +42,74 @@ const BOTTOM_NAV: { kind: View["kind"]; icon: string; label: string }[] = [
 ];
 
 export default function App() {
-  const [view, setViewRaw] = useState<View>({ kind: "dashboard" });
-  const [lastListView, setLastListView] = useState<View>({ kind: "notes" });
   const [theme, setTheme] = useState(
     () =>
       localStorage.getItem(THEME_KEY) ??
       (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
   );
-  const [navOpen, setNavOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem(THEME_KEY, theme);
     document.getElementById("meta-theme-color")?.setAttribute("content", THEME_COLORS[theme] ?? "#ffffff");
   }, [theme]);
+
+  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+
+  // without a Clerk key the app runs exactly as before: local-only, no login
+  if (!clerkConfigured) {
+    return <Workspace userId={null} account={null} theme={theme} toggleTheme={toggleTheme} />;
+  }
+
+  if (window.location.pathname.endsWith("/sso-callback")) {
+    return <AuthenticateWithRedirectCallback />;
+  }
+
+  return (
+    <>
+      <ClerkLoading>
+        <div className="auth-screen">
+          <div className="muted">Loading…</div>
+        </div>
+      </ClerkLoading>
+      <SignedOut>
+        <SignInScreen />
+      </SignedOut>
+      <SignedIn>
+        <SignedInWorkspace theme={theme} toggleTheme={toggleTheme} />
+      </SignedIn>
+    </>
+  );
+}
+
+function SignedInWorkspace({ theme, toggleTheme }: { theme: string; toggleTheme: () => void }) {
+  const { user } = useUser();
+  if (!user) return null;
+  return (
+    <Workspace
+      userId={user.id}
+      account={<UserButton afterSignOutUrl={import.meta.env.BASE_URL} />}
+      theme={theme}
+      toggleTheme={toggleTheme}
+    />
+  );
+}
+
+function Workspace({
+  userId,
+  account,
+  theme,
+  toggleTheme,
+}: {
+  userId: string | null;
+  account: React.ReactNode;
+  theme: string;
+  toggleTheme: () => void;
+}) {
+  const [view, setViewRaw] = useState<View>({ kind: "dashboard" });
+  const [lastListView, setLastListView] = useState<View>({ kind: "notes" });
+  const [navOpen, setNavOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // hide the bottom nav while the on-screen keyboard is up so it doesn't ride above it
   useEffect(() => {
@@ -79,8 +143,12 @@ export default function App() {
   }
 
   return (
-    <StoreProvider>
+    <StoreProvider key={userId ?? "local"} userId={userId}>
       <ToastProvider>
+        {userId && cloudConfigured && <CloudSync />}
+        {userId && !cloudConfigured && (
+          <div className="sync-badge error">⚠️ Supabase not configured — data is only on this device</div>
+        )}
         <div className="app">
           <header className="topbar">
             <button className="icon-btn topbar-btn" onClick={() => setNavOpen(true)} aria-label="Open menu">
@@ -96,10 +164,11 @@ export default function App() {
             view={view}
             setView={setView}
             theme={theme}
-            toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
+            toggleTheme={toggleTheme}
             open={navOpen}
             onClose={() => setNavOpen(false)}
             openSearch={() => setSearchOpen(true)}
+            account={account}
           />
           {navOpen && <div className="drawer-backdrop" onClick={() => setNavOpen(false)} />}
 

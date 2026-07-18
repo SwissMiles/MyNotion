@@ -51,14 +51,16 @@ export type BlockType =
   | "quote"
   | "callout"
   | "divider"
-  | "code";
+  | "code"
+  | "image";
 
 export interface Block {
   id: ID;
   type: BlockType;
-  text: string;
+  text: string; // for image blocks this is the caption
   checked?: boolean; // for todo blocks
   indent?: number; // 0 (default) … 4, set with Tab / Shift-Tab
+  url?: string; // for image blocks: data URI or external URL
 }
 
 export interface Page {
