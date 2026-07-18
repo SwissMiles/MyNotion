@@ -22,6 +22,7 @@ const THEME_KEY = "mynotion-theme";
 export default function App() {
   const [view, setViewRaw] = useState<View>({ kind: "dashboard" });
   const [lastListView, setLastListView] = useState<View>({ kind: "notes" });
+  const [navOpen, setNavOpen] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) ?? "light");
 
   useEffect(() => {
@@ -32,14 +33,21 @@ export default function App() {
   function setView(v: View) {
     if (v.kind !== "page") setLastListView(v);
     setViewRaw(v);
+    setNavOpen(false);
   }
 
   return (
     <StoreProvider>
       <div className="app">
+        <header className="topbar">
+          <button className="icon-btn burger" onClick={() => setNavOpen(true)} aria-label="Open menu">☰</button>
+          <span className="topbar-title">🎓 MyNotion</span>
+        </header>
+        {navOpen && <div className="sidebar-backdrop" onClick={() => setNavOpen(false)} />}
         <Sidebar
           view={view}
           setView={setView}
+          open={navOpen}
           theme={theme}
           toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
         />

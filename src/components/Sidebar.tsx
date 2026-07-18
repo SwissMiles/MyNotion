@@ -8,11 +8,13 @@ import type { View } from "../App";
 export function Sidebar({
   view,
   setView,
+  open,
   theme,
   toggleTheme,
 }: {
   view: View;
   setView: (v: View) => void;
+  open: boolean;
   theme: string;
   toggleTheme: () => void;
 }) {
@@ -57,7 +59,7 @@ export function Sidebar({
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${open ? "open" : ""}`}>
       <div className="sidebar-head">
         <span className="logo">🎓</span>
         <span className="name">MyNotion</span>
