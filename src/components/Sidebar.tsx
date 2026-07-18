@@ -8,15 +8,19 @@ import type { View } from "../App";
 export function Sidebar({
   view,
   setView,
-  open,
   theme,
   toggleTheme,
+  open,
+  onClose,
+  openSearch,
 }: {
   view: View;
   setView: (v: View) => void;
-  open: boolean;
   theme: string;
   toggleTheme: () => void;
+  open: boolean;
+  onClose: () => void;
+  openSearch: () => void;
 }) {
   const state = useAppState();
   const dispatch = useDispatch();
@@ -65,6 +69,23 @@ export function Sidebar({
         <span className="name">MyNotion</span>
         <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
           {theme === "dark" ? "☀️" : "🌙"}
+        </button>
+        <button className="icon-btn sidebar-close" onClick={onClose} aria-label="Close menu">
+          ✕
+        </button>
+      </div>
+
+      <div className="nav-section">
+        <button
+          className="nav-item"
+          onClick={() => {
+            onClose();
+            openSearch();
+          }}
+        >
+          <span>🔍</span>
+          <span className="label">Search</span>
+          <span className="count kbd-hint">⌘K</span>
         </button>
       </div>
 
@@ -292,7 +313,7 @@ export function CourseModal({
       <Field label="Weekly meetings">
         <div>
           {meetings.map((m, i) => (
-            <div key={i} className="form-cols" style={{ marginBottom: 6, alignItems: "center" }}>
+            <div key={i} className="meeting-row">
               <select value={m.day} onChange={(e) => setMeeting(i, { day: Number(e.target.value) })}>
                 {DAY_NAMES.map((d, di) => (
                   <option key={di} value={di}>{d}</option>
