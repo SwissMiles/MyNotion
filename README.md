@@ -53,6 +53,32 @@ host — GitHub Pages, Netlify, Vercel…).
 
 ## Tech
 
-React 18 + TypeScript + Vite, zero other runtime dependencies. State lives in a
-single reducer (`src/store.tsx`) persisted to `localStorage`; types are in
-`src/types.ts`, grade/GPA math in `src/lib.ts`.
+React 18 + TypeScript + Vite, zero other runtime dependencies.
+
+### Architecture
+
+```
+src/
+  types.ts             Domain models (Semester, Course, Task, Page, GradeEntry)
+  constants.ts         Shared constants (colors, icons, nav items, options)
+  store/               App state: context provider, domain slice reducers,
+                       localStorage persistence + migrations, selectors
+  contexts/            Cross-cutting UI state: theme, navigation, Quick Find
+  hooks/               Generic reusable hooks (useWindowEvent, useFormState)
+  utils/               Pure helpers: dates, grade math, course/meeting helpers,
+                       safe storage access
+  components/          Small shared UI primitives (Modal, Field, ColorDot…)
+  features/            One folder per feature — each owns its views, components
+                       and feature-specific logic:
+                       layout, semesters, courses, tasks, notes, editor,
+                       grades, timetable, dashboard, quick-find
+```
+
+Conventions: components read state through context hooks (`useAppState`,
+`useActiveSemester`, `useNavigation`, `useTheme`) rather than prop drilling;
+business logic lives in pure functions under `utils/` and per-feature modules
+so it's testable in isolation; all styling is in `src/styles.css` — dynamic
+values (course colors, timetable positions) are passed as CSS custom
+properties, never inline styles. To add a feature, create a folder under
+`src/features/`, add a slice under `src/store/slices/` if it needs new state,
+and wire its view into `src/ActiveView.tsx`.
