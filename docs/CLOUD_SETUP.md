@@ -79,14 +79,19 @@ Then `npm run dev`, open the app, and sign in with Google or GitHub. 🎉
 
 ## Deploying for free
 
-The app is a static site, so you can host it for free on GitHub Pages, Netlify, Vercel or
-Cloudflare Pages. Remember to:
+The repo already deploys to GitHub Pages automatically on every push to `main`
+(`.github/workflows/deploy-pages.yml`) at `https://<user>.github.io/MyNotion/`.
+To enable login + cloud sync on the deployed site:
 
-1. Set the three `VITE_…` environment variables in the host's build settings
-   (they are baked in at build time).
+1. In GitHub: *Settings → Secrets and variables → Actions → Variables* — add the three
+   `VITE_…` values from your `.env.local` (they are baked in at build time; all three are
+   publishable, not secret).
 2. Add your production URL to Clerk: *Configure → Domains*.
 3. When going to production in Clerk you'll create production instances of the Google/GitHub
    OAuth apps — Clerk's dashboard walks you through it.
+
+Until those variables are set, the deployed site runs in local-only mode (no login,
+data in the browser).
 
 ## Free-tier limits (plenty for one student)
 

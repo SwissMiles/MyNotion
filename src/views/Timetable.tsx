@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useActiveSemester } from "../store";
 import { DAY_NAMES } from "../lib";
 import type { View } from "../App";
@@ -14,13 +14,24 @@ function toMin(t: string): number {
 
 export function Timetable({ setView }: { setView: (v: View) => void }) {
   const { semester, courses } = useActiveSemester();
-  if (!semester) return null;
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const events = courses.flatMap((c) => c.meetings.map((m) => ({ course: c, meeting: m })));
   const showWeekend = events.some((e) => e.meeting.day >= 5);
   const days = showWeekend ? 7 : 5;
-  const jsDay = new Date().getDay();
-  const todayIdx = (jsDay + 6) % 7;
+  const now = new Date();
+  const todayIdx = (now.getDay() + 6) % 7;
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  // on small screens the grid scrolls horizontally — start with today's column in view
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || el.scrollWidth <= el.clientWidth) return;
+    const dayWidth = (el.scrollWidth - 52) / days;
+    el.scrollLeft = Math.max(0, 52 + dayWidth * todayIdx - (el.clientWidth - dayWidth) / 2);
+  }, [days, todayIdx]);
+
+  if (!semester) return null;
 
   const hours: number[] = [];
   for (let h = START_HOUR; h < END_HOUR; h++) hours.push(h);
@@ -34,6 +45,7 @@ export function Timetable({ setView }: { setView: (v: View) => void }) {
       {events.length === 0 ? (
         <div className="empty">No meeting times yet. Edit a course and add its weekly meetings to fill the timetable.</div>
       ) : (
+        <div className="tt-scroll" ref={scrollRef}>
         <div className="timetable" style={{ gridTemplateColumns: `52px repeat(${days}, 1fr)` }}>
           <div className="tt-head" />
           {DAY_NAMES.slice(0, days).map((d, i) => (
@@ -53,6 +65,9 @@ export function Timetable({ setView }: { setView: (v: View) => void }) {
               {hours.map((h) => (
                 <div key={h} className="tt-cell" style={{ height: HOUR_PX }} />
               ))}
+              {dayIdx === todayIdx && nowMin >= START_HOUR * 60 && nowMin < END_HOUR * 60 && (
+                <div className="tt-now" style={{ top: ((nowMin - START_HOUR * 60) / 60) * HOUR_PX }} />
+              )}
               {events
                 .filter((e) => e.meeting.day === dayIdx)
                 .map((e, i) => {
@@ -78,6 +93,7 @@ export function Timetable({ setView }: { setView: (v: View) => void }) {
                 })}
             </div>
           ))}
+        </div>
         </div>
       )}
     </div>
