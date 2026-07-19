@@ -234,7 +234,7 @@ function FocusIndicator({ currentView, goToFocus }: { currentView: View; goToFoc
   );
 }
 
-function SemesterModal({ onClose }: { onClose: () => void }) {
+export function SemesterModal({ onClose }: { onClose: () => void }) {
   const state = useAppState();
   const dispatch = useDispatch();
   const [name, setName] = useState("");

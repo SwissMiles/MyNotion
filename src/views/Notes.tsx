@@ -4,6 +4,8 @@ import { blocksToMarkdown } from "../lib";
 import type { Page } from "../types";
 import type { View } from "../App";
 import { BlockEditor } from "../components/BlockEditor";
+import { NoSemesterNotice } from "../components/ui";
+import { SemesterModal } from "../components/Sidebar";
 
 const PAGE_ICONS = [
   "📄", "📝", "📚", "📖", "🧪", "💡", "🧠", "🗂️",
@@ -27,7 +29,16 @@ export function newPage(semesterId: string, courseId: string | null, title = "")
 export function NotesView({ setView }: { setView: (v: View) => void }) {
   const { semester, pages, courses } = useActiveSemester();
   const dispatch = useDispatch();
-  if (!semester) return null;
+  const [showSemModal, setShowSemModal] = useState(false);
+
+  if (!semester) {
+    return (
+      <>
+        <NoSemesterNotice message="Create a semester to start taking notes." onCreateSemester={() => setShowSemModal(true)} />
+        {showSemModal && <SemesterModal onClose={() => setShowSemModal(false)} />}
+      </>
+    );
+  }
 
   const groups: { label: string; color: string | null; pages: Page[] }[] = [
     { label: "General", color: null, pages: pages.filter((p) => p.courseId === null) },

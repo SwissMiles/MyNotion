@@ -2,12 +2,22 @@ import React, { useState } from "react";
 import { uid, useActiveSemester, useDispatch } from "../store";
 import { PASS_GRADE, courseGrade, fmtGrade, isPass, pointsToGrade, requiredGrade, roundToQuarter, semesterAverage } from "../lib";
 import type { Course, GradeEntry } from "../types";
-import { Field, Modal } from "../components/ui";
+import { Field, Modal, NoSemesterNotice } from "../components/ui";
+import { SemesterModal } from "../components/Sidebar";
 import type { View } from "../App";
 
 export function GradesView({ setView }: { setView: (v: View) => void }) {
   const { semester, courses, grades } = useActiveSemester();
-  if (!semester) return null;
+  const [showSemModal, setShowSemModal] = useState(false);
+
+  if (!semester) {
+    return (
+      <>
+        <NoSemesterNotice message="Create a semester to start tracking grades." onCreateSemester={() => setShowSemModal(true)} />
+        {showSemModal && <SemesterModal onClose={() => setShowSemModal(false)} />}
+      </>
+    );
+  }
 
   const avg = semesterAverage(courses, grades);
   const courseAvgs = courses.map((c) => ({
