@@ -4,6 +4,8 @@ import type { AppState, Course, CourseMeeting, Semester } from "../types";
 import { DAY_NAMES } from "../lib";
 import { Field, Modal } from "./ui";
 import type { View } from "../App";
+import { dueCards } from "../srs";
+import { fmtClock, useFocus } from "../focus";
 
 export function Sidebar({
   view,
@@ -26,13 +28,14 @@ export function Sidebar({
 }) {
   const state = useAppState();
   const dispatch = useDispatch();
-  const { semester, courses, tasks } = useActiveSemester();
+  const { semester, courses, tasks, flashcards } = useActiveSemester();
   const [showSemModal, setShowSemModal] = useState(false);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [editCourse, setEditCourse] = useState<Course | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const openTasks = tasks.filter((t) => !t.done).length;
+  const dueCardCount = dueCards(flashcards).length;
 
   function exportData() {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -57,6 +60,8 @@ export function Sidebar({
           tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
           pages: Array.isArray(parsed.pages) ? parsed.pages : [],
           grades: Array.isArray(parsed.grades) ? parsed.grades : [],
+          flashcards: Array.isArray(parsed.flashcards) ? parsed.flashcards : [],
+          sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
         };
         const ok = confirm(
           `Import this backup?\n\nIt contains ${next.semesters.length} semester(s), ` +
@@ -74,7 +79,10 @@ export function Sidebar({
   const mainNav: { key: View["kind"]; icon: string; label: string; count?: number }[] = [
     { key: "dashboard", icon: "🏠", label: "Dashboard" },
     { key: "tasks", icon: "✅", label: "Assignments & Exams", count: openTasks },
+    { key: "calendar", icon: "📅", label: "Calendar" },
     { key: "timetable", icon: "🗓️", label: "Timetable" },
+    { key: "flashcards", icon: "🃏", label: "Flashcards", count: dueCardCount },
+    { key: "focus", icon: "⏱️", label: "Focus" },
     { key: "grades", icon: "📊", label: "Grades" },
     { key: "notes", icon: "📄", label: "All Notes" },
   ];
@@ -106,6 +114,14 @@ export function Sidebar({
           <span className="count kbd-hint">⌘K</span>
         </button>
       </div>
+
+      <FocusIndicator
+        currentView={view}
+        goToFocus={() => {
+          onClose();
+          setView({ kind: "focus" });
+        }}
+      />
 
       <div className="sem-picker">
         <select
@@ -186,6 +202,35 @@ export function Sidebar({
         />
       )}
     </aside>
+  );
+}
+
+/** Live countdown shown in the sidebar while a focus/break session is active,
+ *  so the timer stays visible from any view. Clicking jumps to Focus. */
+function FocusIndicator({ currentView, goToFocus }: { currentView: View; goToFocus: () => void }) {
+  const focus = useFocus();
+  const { courses } = useActiveSemester();
+
+  if (!focus.active || currentView.kind === "focus") return null;
+
+  const course = focus.courseId ? courses.find((c) => c.id === focus.courseId) : null;
+  const label =
+    focus.phase === "break" ? "Break" : course ? course.code || course.name : "Focusing";
+
+  return (
+    <div className="nav-section">
+      <button
+        className={`nav-item focus-indicator ${focus.running ? "" : "focus-indicator--paused"}`}
+        onClick={goToFocus}
+        title="Go to Focus"
+      >
+        <span>{focus.phase === "break" ? "☕" : "⏱️"}</span>
+        <span className="label">{label}</span>
+        <span className="focus-indicator-time">
+          {focus.running ? fmtClock(focus.secondsLeft) : "paused"}
+        </span>
+      </button>
+    </div>
   );
 }
 

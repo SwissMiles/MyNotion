@@ -7,10 +7,12 @@ import { Field, Modal, useToast } from "./ui";
 export function TaskModal({
   task,
   defaultCourseId,
+  defaultDue,
   onClose,
 }: {
   task: Task | null;
   defaultCourseId?: string | null;
+  defaultDue?: string;
   onClose: () => void;
 }) {
   const dispatch = useDispatch();
@@ -19,7 +21,7 @@ export function TaskModal({
   const [title, setTitle] = useState(task?.title ?? "");
   const [courseId, setCourseId] = useState<string>(task?.courseId ?? defaultCourseId ?? "");
   const [kind, setKind] = useState<TaskKind>(task?.kind ?? "assignment");
-  const [due, setDue] = useState(task?.due ?? new Date().toISOString().slice(0, 10));
+  const [due, setDue] = useState(task?.due ?? defaultDue ?? new Date().toISOString().slice(0, 10));
   const [priority, setPriority] = useState<TaskPriority>(task?.priority ?? "medium");
   const [notes, setNotes] = useState(task?.notes ?? "");
 

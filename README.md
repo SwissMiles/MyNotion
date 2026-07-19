@@ -34,6 +34,19 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
   quarter grades (ETH-style); the semester average is credit-weighted. Failing
   grades are highlighted, and while a course is partially graded it shows the
   average you still need on the remaining weight to pass.
+- **Calendar** — month view merging assignment deadlines, exams (highlighted)
+  and your weekly classes. Click any day to add a task due that day, click a
+  task to edit it; exams stand out, done tasks are struck through.
+- **Flashcards with spaced repetition** — one deck per course plus a general
+  deck. Review due cards in a fullscreen study mode (click/space to flip,
+  rate **Again / Hard / Good / Easy**, keys 1–4); an SM-2-style scheduler
+  decides when each card comes back, and cards you find hard return sooner.
+  The sidebar and dashboard show how many cards are waiting.
+- **Focus timer (Pomodoro)** — 15/25/50-minute focus sessions with breaks,
+  tied to a course. Finished sessions are logged automatically and feed
+  study-time stats: minutes today, last 7 days, and a per-course breakdown so
+  you can see where your time actually goes. The countdown stays visible in
+  the sidebar (and the tab title) wherever you are in the app.
 - **Light & dark mode**, **Markdown export** for any note page, and
   **JSON export / import** for backups (import shows what the backup contains
   before replacing anything).

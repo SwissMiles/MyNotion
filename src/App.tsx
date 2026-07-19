@@ -13,7 +13,11 @@ import { ToastProvider } from "./components/ui";
 import { SearchPalette } from "./components/SearchPalette";
 import { Dashboard } from "./views/Dashboard";
 import { TasksView } from "./views/Tasks";
+import { CalendarView } from "./views/Calendar";
+import { FlashcardsView } from "./views/Flashcards";
+import { FocusView } from "./views/Focus";
 import { Timetable } from "./views/Timetable";
+import { FocusProvider } from "./focus";
 import { GradesView } from "./views/Grades";
 import { NotesView, PageView } from "./views/Notes";
 import { CourseView, type CourseTab } from "./views/Course";
@@ -24,6 +28,9 @@ import { clerkConfigured, cloudConfigured } from "./config";
 export type View =
   | { kind: "dashboard" }
   | { kind: "tasks" }
+  | { kind: "calendar" }
+  | { kind: "flashcards" }
+  | { kind: "focus" }
   | { kind: "timetable" }
   | { kind: "grades" }
   | { kind: "notes" }
@@ -144,6 +151,7 @@ function Workspace({
 
   return (
     <StoreProvider key={userId ?? "local"} userId={userId}>
+      <FocusProvider>
       <ToastProvider>
         {userId && cloudConfigured && <CloudSync />}
         {userId && !cloudConfigured && (
@@ -175,6 +183,9 @@ function Workspace({
           <main className="main">
             {view.kind === "dashboard" && <Dashboard setView={setView} />}
             {view.kind === "tasks" && <TasksView />}
+            {view.kind === "calendar" && <CalendarView />}
+            {view.kind === "flashcards" && <FlashcardsView />}
+            {view.kind === "focus" && <FocusView />}
             {view.kind === "timetable" && <Timetable setView={setView} />}
             {view.kind === "grades" && <GradesView setView={setView} />}
             {view.kind === "notes" && <NotesView setView={setView} />}
@@ -200,6 +211,7 @@ function Workspace({
           {searchOpen && <SearchPalette setView={setView} onClose={() => setSearchOpen(false)} />}
         </div>
       </ToastProvider>
+      </FocusProvider>
     </StoreProvider>
   );
 }

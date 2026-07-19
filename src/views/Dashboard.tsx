@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { useActiveSemester } from "../store";
-import { DAY_NAMES, daysUntil, fmtDateLong, semesterAverage, sortByDue } from "../lib";
+import { DAY_NAMES, daysUntil, fmtDateLong, isoDateLocal, semesterAverage, sortByDue } from "../lib";
+import { dueCards } from "../srs";
+import { fmtMinutes, sessionsOnDay, totalMinutes } from "../sessions";
 import { TaskList, TaskModal } from "../components/tasks";
 import type { Task } from "../types";
 import type { View } from "../App";
 
 export function Dashboard({ setView }: { setView: (v: View) => void }) {
-  const { semester, courses, tasks, grades } = useActiveSemester();
+  const { semester, courses, tasks, grades, flashcards, sessions } = useActiveSemester();
   const [modalTask, setModalTask] = useState<Task | null | "new">(null);
+  const dueCardCount = dueCards(flashcards).length;
+  const minutesToday = totalMinutes(sessionsOnDay(sessions, isoDateLocal()));
 
   if (!semester) return <div className="page-wrap"><div className="empty">Create a semester to get started.</div></div>;
 
@@ -76,6 +80,30 @@ export function Dashboard({ setView }: { setView: (v: View) => void }) {
                 <span className="muted">{meeting.start}–{meeting.end}{meeting.location ? ` · ${meeting.location}` : ""}</span>
               </div>
             ))}
+          </div>
+
+          <div className="section-title">🧠 Studying</div>
+          <div className="card study-section">
+            <button className="study-nudge" onClick={() => setView({ kind: "flashcards" })}>
+              <span className="study-nudge-icon">🃏</span>
+              <span className="study-nudge-text">
+                {dueCardCount > 0 ? (
+                  <><b>{dueCardCount}</b> flashcard{dueCardCount === 1 ? "" : "s"} due for review</>
+                ) : (
+                  "All flashcards reviewed 🎉"
+                )}
+              </span>
+            </button>
+            <button className="study-nudge" onClick={() => setView({ kind: "focus" })}>
+              <span className="study-nudge-icon">⏱️</span>
+              <span className="study-nudge-text">
+                {minutesToday > 0 ? (
+                  <><b>{fmtMinutes(minutesToday)}</b> of focused studying today</>
+                ) : (
+                  "No focus session yet today — start one"
+                )}
+              </span>
+            </button>
           </div>
 
           <div className="section-title">📚 Courses</div>

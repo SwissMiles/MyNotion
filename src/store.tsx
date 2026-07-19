@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useReducer } from "react";
-import type { AppState, Block, Course, GradeEntry, ID, Page, Semester, Task } from "./types";
+import type { AppState, Block, Course, Flashcard, GradeEntry, ID, Page, ReviewRating, Semester, StudySession, Task } from "./types";
+import { applyReview } from "./srs";
 
 const STORAGE_KEY = "mynotion-state-v1";
 
@@ -27,6 +28,8 @@ function seedState(): AppState {
     tasks: [],
     pages: [],
     grades: [],
+    flashcards: [],
+    sessions: [],
   };
 }
 
@@ -46,6 +49,9 @@ export function normalizeState(state: AppState): AppState {
       }
       return g;
     }),
+    // collections added later are missing from older local/cloud snapshots
+    flashcards: Array.isArray(state.flashcards) ? state.flashcards : [],
+    sessions: Array.isArray(state.sessions) ? state.sessions : [],
   };
 }
 
@@ -79,6 +85,12 @@ export type Action =
   | { type: "addGrade"; grade: GradeEntry }
   | { type: "updateGrade"; grade: GradeEntry }
   | { type: "deleteGrade"; id: ID }
+  | { type: "addFlashcard"; card: Flashcard }
+  | { type: "updateFlashcard"; card: Flashcard }
+  | { type: "deleteFlashcard"; id: ID }
+  | { type: "reviewFlashcard"; id: ID; rating: ReviewRating }
+  | { type: "addSession"; session: StudySession }
+  | { type: "deleteSession"; id: ID }
   | { type: "importState"; state: AppState };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -98,6 +110,8 @@ function reducer(state: AppState, action: Action): AppState {
         tasks: state.tasks.filter((t) => t.semesterId !== action.id),
         pages: state.pages.filter((p) => p.semesterId !== action.id),
         grades: state.grades.filter((g) => !removedCourseIds.has(g.courseId)),
+        flashcards: state.flashcards.filter((c) => c.semesterId !== action.id),
+        sessions: state.sessions.filter((s) => s.semesterId !== action.id),
       };
     }
     case "setActiveSemester":
@@ -113,6 +127,9 @@ function reducer(state: AppState, action: Action): AppState {
         tasks: state.tasks.filter((t) => t.courseId !== action.id),
         pages: state.pages.filter((p) => p.courseId !== action.id),
         grades: state.grades.filter((g) => g.courseId !== action.id),
+        flashcards: state.flashcards.filter((c) => c.courseId !== action.id),
+        // study time is history — keep it, just detach it from the course
+        sessions: state.sessions.map((s) => (s.courseId === action.id ? { ...s, courseId: null } : s)),
       };
     case "addTask":
       return { ...state, tasks: [...state.tasks, action.task] };
@@ -148,6 +165,21 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, grades: state.grades.map((g) => (g.id === action.grade.id ? action.grade : g)) };
     case "deleteGrade":
       return { ...state, grades: state.grades.filter((g) => g.id !== action.id) };
+    case "addFlashcard":
+      return { ...state, flashcards: [...state.flashcards, action.card] };
+    case "updateFlashcard":
+      return { ...state, flashcards: state.flashcards.map((c) => (c.id === action.card.id ? action.card : c)) };
+    case "deleteFlashcard":
+      return { ...state, flashcards: state.flashcards.filter((c) => c.id !== action.id) };
+    case "reviewFlashcard":
+      return {
+        ...state,
+        flashcards: state.flashcards.map((c) => (c.id === action.id ? applyReview(c, action.rating) : c)),
+      };
+    case "addSession":
+      return { ...state, sessions: [...state.sessions, action.session] };
+    case "deleteSession":
+      return { ...state, sessions: state.sessions.filter((s) => s.id !== action.id) };
     case "importState":
       return action.state;
     default:
@@ -197,6 +229,8 @@ export function useActiveSemester() {
       tasks: semester ? state.tasks.filter((t) => t.semesterId === semester.id) : [],
       pages: semester ? state.pages.filter((p) => p.semesterId === semester.id) : [],
       grades: state.grades.filter((g) => courseIds.has(g.courseId)),
+      flashcards: semester ? state.flashcards.filter((c) => c.semesterId === semester.id) : [],
+      sessions: semester ? state.sessions.filter((s) => s.semesterId === semester.id) : [],
     };
   }, [state, semester]);
 }

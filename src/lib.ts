@@ -2,6 +2,19 @@ import type { Block, Course, GradeEntry, Task } from "./types";
 
 export const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+/** "YYYY-MM-DD" using the local calendar date (toISOString converts via UTC,
+ *  which can land on the neighbouring day depending on the timezone). */
+export function isoDateLocal(date: Date = new Date()): string {
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+/** Day-of-week index with Monday = 0 (JS Date uses Sunday = 0). */
+export function mondayDayIndex(date: Date = new Date()): number {
+  return (date.getDay() + 6) % 7;
+}
+
 export function fmtDate(iso: string): string {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return iso;
