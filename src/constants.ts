@@ -3,6 +3,10 @@ import type { StaticViewKind } from "./contexts/NavigationContext";
 
 export const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+export const DAY_NAMES_FULL = [
+  "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+];
+
 export const COURSE_COLORS = [
   "#e05d5d", "#e0885d", "#d9b13b", "#6cae4f",
   "#4fae9c", "#5d8de0", "#8a6de0", "#c95dc0",

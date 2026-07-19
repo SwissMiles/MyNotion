@@ -7,18 +7,30 @@ import { SidebarNav } from "./SidebarNav";
 import { SidebarCourses } from "./SidebarCourses";
 import { BackupControls } from "./BackupControls";
 
-export function Sidebar() {
+export function Sidebar({
+  open = false,
+  onClose,
+}: {
+  /** On mobile the sidebar is an off-canvas drawer; this slides it in. */
+  open?: boolean;
+  onClose?: () => void;
+}) {
   const { theme, toggleTheme } = useTheme();
   const quickFind = useQuickFind();
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${open ? "sidebar--open" : ""}`}>
       <div className="sidebar-head">
         <span className="logo">🎓</span>
         <span className="name">MyNotion</span>
         <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
           {theme === "dark" ? "☀️" : "🌙"}
         </button>
+        {onClose && (
+          <button className="icon-btn sidebar-close" onClick={onClose} aria-label="Close menu">
+            ✕
+          </button>
+        )}
       </div>
 
       <div className="nav-section nav-section--flat">

@@ -40,6 +40,12 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
   (5 · points ⁄ max + 1). Course grades are weighted averages rounded to
   quarter grades (ETH-style); the semester average is credit-weighted. Failing
   grades are highlighted.
+- **Built for your phone too** — on small screens the app switches to a
+  mobile layout: a bottom tab bar for the main sections, a slide-in sidebar
+  drawer, and a top bar with search. The timetable becomes a day-by-day
+  agenda (tap a day chip or swipe to browse), tasks are swipeable (swipe
+  right to complete, left for edit / delete), and dialogs open as bottom
+  sheets with touch-sized controls throughout.
 - **Light & dark mode**, and **JSON export / import** for backups.
 
 All data is stored locally in your browser (`localStorage`) — no account, no

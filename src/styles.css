@@ -274,9 +274,34 @@ input, select, textarea { font: inherit; color: inherit; }
 .meeting-row { margin-bottom: 6px; align-items: center; }
 
 /* ---------- Task list ---------- */
+.task-swipe { position: relative; border-radius: 6px; overflow: hidden; }
+.task-swipe-under {
+  position: absolute; inset: 0;
+  display: flex; align-items: center;
+  border-radius: 6px;
+}
+.task-swipe-under--complete {
+  background: color-mix(in srgb, var(--ok) 22%, var(--bg));
+  color: var(--ok); font-size: 18px; font-weight: 700;
+  padding-left: 18px;
+  transition: opacity 0.15s ease;
+}
+.task-swipe-under--tray { justify-content: flex-end; gap: 0; }
+.swipe-btn {
+  height: 100%; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600; padding: 0 12px;
+  white-space: nowrap;
+}
+.swipe-btn--edit { background: var(--bg-3); color: var(--text-2); }
+.swipe-btn--delete {
+  background: color-mix(in srgb, var(--danger) 18%, var(--bg));
+  color: var(--danger);
+}
 .task-row {
   display: flex; align-items: center; gap: 10px;
   padding: 7px 10px; border-radius: 6px;
+  position: relative; background: var(--bg);
+  touch-action: pan-y;
 }
 .task-row:hover { background: var(--bg-2); }
 .task-row input[type="checkbox"] {
@@ -559,3 +584,180 @@ kbd {
   flex-shrink: 0;
 }
 .qf-foot kbd { margin-right: 3px; }
+
+/* ---------- Mobile chrome (top bar, tab bar, drawer) ---------- */
+.mobile-topbar {
+  display: none;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 55;
+  align-items: center; gap: 6px;
+  height: calc(52px + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) 6px 0;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-btn {
+  border: none; background: none; cursor: pointer;
+  font-size: 19px; color: var(--text-2);
+  width: 44px; height: 44px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.topbar-btn:active { background: var(--bg-3); }
+.topbar-title {
+  flex: 1; text-align: center;
+  font-size: 16px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.mobile-tabbar {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 55;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tabbar-item {
+  flex: 1; border: none; background: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 7px 2px 6px;
+  color: var(--text-2);
+}
+.tabbar-item.active { color: var(--accent); }
+.tabbar-icon { font-size: 20px; line-height: 1.2; position: relative; }
+.tabbar-label { font-size: 10.5px; font-weight: 500; }
+.tabbar-item.active .tabbar-label { font-weight: 700; }
+.tabbar-badge {
+  position: absolute; top: -3px; right: -12px;
+  min-width: 16px; height: 16px; padding: 0 4px;
+  border-radius: 999px; background: var(--danger); color: #fff;
+  font-size: 10px; font-weight: 700; line-height: 16px; text-align: center;
+}
+
+.drawer-backdrop {
+  position: fixed; inset: 0; z-index: 68;
+  background: rgba(0, 0, 0, 0.4);
+}
+.sidebar-close { display: none; }
+
+/* ---------- Day agenda (mobile timetable) ---------- */
+.day-chips {
+  display: flex; gap: 6px;
+  overflow-x: auto; padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+.day-chip {
+  flex: 1; min-width: 44px; min-height: 40px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg); color: var(--text-2);
+  font-size: 13.5px; font-weight: 600; cursor: pointer;
+}
+.day-chip.today { color: var(--accent); border-color: var(--accent); }
+.day-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.agenda-list { margin-top: 14px; touch-action: pan-y; }
+.agenda-day-name {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 700; margin-bottom: 10px;
+}
+.agenda-card {
+  display: flex; align-items: stretch; gap: 12px;
+  width: 100%; text-align: left; cursor: pointer;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg); box-shadow: var(--shadow);
+  padding: 12px 14px; margin-bottom: 10px;
+}
+.agenda-card:active { background: var(--bg-2); }
+.agenda-band {
+  width: 4px; border-radius: 2px; flex-shrink: 0;
+  background: var(--agenda-color);
+}
+.agenda-time {
+  display: flex; flex-direction: column;
+  font-size: 13.5px; font-weight: 600; flex-shrink: 0;
+  min-width: 46px;
+}
+.agenda-end { color: var(--text-3); font-weight: 400; }
+.agenda-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.agenda-name { font-weight: 600; }
+.agenda-meta {
+  display: flex; flex-wrap: wrap; gap: 4px 10px;
+  font-size: 12.5px; color: var(--text-2);
+}
+
+/* ---------- Touch devices ---------- */
+@media (pointer: coarse) {
+  .task-row .actions { opacity: 1; }
+  .page-list-item .actions { opacity: 1; }
+  .task-row { padding: 10px; }
+  .task-row input[type="checkbox"] { width: 20px; height: 20px; }
+  .icon-btn { padding: 6px 9px; }
+  .nav-item { padding: 9px 8px; }
+  .btn { padding: 8px 14px; }
+  .block .handle { display: none; }
+}
+
+/* ---------- Phone layout ---------- */
+@media (max-width: 768px) {
+  .mobile-topbar { display: flex; }
+  .mobile-tabbar { display: flex; }
+
+  .sidebar {
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 70;
+    width: min(300px, 85vw);
+    transform: translateX(-105%);
+    transition: transform 0.22s ease;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.25);
+    padding-top: env(safe-area-inset-top);
+  }
+  .sidebar--open { transform: translateX(0); }
+  .sidebar-close { display: block; }
+
+  .main {
+    padding-top: calc(52px + env(safe-area-inset-top));
+    padding-bottom: 0;
+  }
+  .page-wrap {
+    padding: 20px 16px calc(90px + env(safe-area-inset-bottom));
+  }
+  .page-title { font-size: 24px; }
+  .page-title-input { font-size: 24px; }
+  .page-icon-button { font-size: 24px; }
+  .page-sub { margin-bottom: 16px; }
+  .stat-row { gap: 8px; }
+  .grade-big { font-size: 24px; }
+
+  /* Prevent iOS auto-zoom on focus: inputs must be ≥16px. */
+  input, select, textarea { font-size: 16px; }
+  .qf-input { font-size: 16px; }
+
+  /* Modals become bottom sheets, above the fixed top/tab bars. */
+  .modal-backdrop {
+    padding: 0; align-items: flex-end;
+    z-index: 65;
+  }
+  .modal {
+    width: 100%; max-width: none;
+    max-height: 88vh;
+    border-radius: 14px 14px 0 0;
+    border-left: none; border-right: none; border-bottom: none;
+    padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+    animation: sheet-up 0.22s ease;
+  }
+  .modal-actions .btn { padding: 10px 16px; }
+
+  .qf-backdrop { padding: 4vh 10px 0; }
+  .qf-panel { max-height: 78vh; }
+
+  .form-cols { flex-direction: column; gap: 0; }
+  .form-cols > * { margin-bottom: 12px; }
+  .meeting-row { flex-direction: row; gap: 6px; }
+  .meeting-row > * { margin-bottom: 0; }
+}
+
+@keyframes sheet-up {
+  from { transform: translateY(24px); opacity: 0.6; }
+  to { transform: translateY(0); opacity: 1; }
+}
