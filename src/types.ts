@@ -40,13 +40,27 @@ export interface Task {
   notes: string;
 }
 
-export type BlockType = "text" | "h1" | "h2" | "todo" | "bullet" | "quote" | "divider" | "code";
+export type BlockType =
+  | "text"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "todo"
+  | "bullet"
+  | "numbered"
+  | "quote"
+  | "callout"
+  | "divider"
+  | "code"
+  | "image";
 
 export interface Block {
   id: ID;
   type: BlockType;
-  text: string;
+  text: string; // for image blocks this is the caption
   checked?: boolean; // for todo blocks
+  indent?: number; // 0 (default) … 4, set with Tab / Shift-Tab
+  url?: string; // for image blocks: data URI or external URL
 }
 
 export interface Page {
@@ -57,6 +71,15 @@ export interface Page {
   icon: string; // emoji
   blocks: Block[];
   updatedAt: string;
+}
+
+export interface GradeEntry {
+  id: ID;
+  courseId: ID;
+  name: string; // e.g. "Midterm 1"
+  category: string; // e.g. "Exams"
+  grade: number; // Swiss grade, 1.0 (worst) to 6.0 (best); 4.0 is a pass
+  weight: number; // percent weight of final grade
 }
 
 export type ReviewRating = "again" | "hard" | "good" | "easy";
@@ -80,15 +103,6 @@ export interface StudySession {
   semesterId: ID;
   startedAt: string; // ISO datetime
   minutes: number;
-}
-
-export interface GradeEntry {
-  id: ID;
-  courseId: ID;
-  name: string; // e.g. "Midterm 1"
-  category: string; // e.g. "Exams"
-  grade: number; // Swiss grade, 1.0 (worst) to 6.0 (best); 4.0 is a pass
-  weight: number; // percent weight of final grade
 }
 
 export interface AppState {

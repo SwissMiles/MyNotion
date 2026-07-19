@@ -1,42 +1,42 @@
 ---
 name: verify
-description: Build, run and drive MyNotion in a headless browser to verify changes end-to-end.
+description: Build, launch and drive MyNotion to verify changes end-to-end.
 ---
 
-# Verifying MyNotion changes
+# Verifying MyNotion
 
-Pure client-side React + Vite app; all state in localStorage (fresh browser
-context = fresh seeded state with one semester, no courses/pages/tasks).
+Vite + React SPA, no backend, state in localStorage (`mynotion-state-v1`).
 
-## Build & run
+## Build & launch
 
 ```bash
-npm install
-npm run build          # tsc -b && vite build — catches type errors
-npx vite --port 5173 --strictPort   # dev server (run in background)
+npm ci                      # if node_modules missing
+npm run build               # tsc -b && vite build (typecheck included)
+npm run dev -- --port 5199  # dev server at http://localhost:5199/
 ```
 
-## Drive it (Playwright)
+## Drive it
 
-Install `playwright` (npm) in a scratch dir and launch the preinstalled
-browser — do NOT run `playwright install`:
+Use Playwright with the pre-installed Chromium:
 
 ```js
+import { chromium } from "/opt/node22/lib/node_modules/playwright/index.mjs";
 const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
 ```
 
-Useful flows / selectors:
+Flows worth driving:
+- Sidebar → "All Notes" → "+ New page" → type in `.page-title-input` and `.block-input`s.
+- Block editor: `/` opens `.slash-menu` (keyboard: arrows + Enter); markdown
+  shortcuts (`# `, `- `, `1. `, `[] `, `> `, "```"); Enter splits, Backspace at
+  caret 0 merges; Tab indents; drag `.block-btn.handle` with mouse to reorder;
+  click the handle for `.block-menu` (duplicate/delete/turn into).
+- Mobile: new context with `{ viewport: {width: 390, height: 844}, hasTouch: true, isMobile: true }`;
+  `.burger` opens the `.sidebar.open` drawer; slash menu renders as `.slash-menu.sheet`.
 
-- App boots to **Dashboard**; navigation state is NOT persisted across reloads.
-- Reach the block editor: click sidebar "All Notes" → button "+ New page".
-  Editor root: `.block-editor`, inputs: `.block-input`, block wrappers:
-  `.block.h1|h2|todo|bullet|quote|code`, dividers: `.block-divider`.
-- Slash menu: type "/" in a block → `.slash-menu`, items `.slash-item`,
-  selected `.slash-item.selected`.
-- Theme toggle is the last button in `.sidebar-head`; theme lands on
-  `document.documentElement.dataset.theme`.
-- Quick Find: Ctrl/⌘ K → `.qf-panel`.
+## Gotchas
 
-Gotchas: use `pressSequentially` (not `fill`) so per-keystroke logic
-(markdown shortcuts, slash menu) fires; new pages are titled "Untitled" in
-the All Notes list after reload.
+- Each browser context has fresh localStorage — create a page before opening one.
+- Reload always lands on Dashboard; navigate back via the sidebar.
+- Read textarea values via `el.value` (`allTextContents()` is stale for controlled textareas).
+- Enter on a non-empty todo/bullet/numbered block continues the list (same type),
+  Enter on an empty one exits it — account for this when scripting typing.
