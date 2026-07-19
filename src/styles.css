@@ -46,7 +46,14 @@ body {
 button { font: inherit; color: inherit; }
 input, select, textarea { font: inherit; color: inherit; }
 
-.app { display: flex; height: 100%; }
+.app {
+  display: flex;
+  height: 100%;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
 
 /* ---------- Sidebar ---------- */
 .sidebar {

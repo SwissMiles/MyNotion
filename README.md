@@ -55,6 +55,19 @@ npm run dev      # http://localhost:5173
 Production build: `npm run build` (output in `dist/`, deployable to any static
 host — GitHub Pages, Netlify, Vercel…).
 
+## Install on iPhone / iPad (PWA)
+
+MyNotion is an installable Progressive Web App — no App Store needed:
+
+1. Deploy the production build to any HTTPS host (Netlify, Vercel, GitHub
+   Pages…), or open your deployed URL.
+2. On your iPhone, open that URL in **Safari**.
+3. Tap the **Share** button, then **Add to Home Screen**, then **Add**.
+
+MyNotion now launches from its own home-screen icon as a full-screen app,
+works offline (all your data is stored on-device in localStorage), and picks
+up updates automatically the next time you open it with a connection.
+
 ## Tech
 
 React 18 + TypeScript + Vite, zero other runtime dependencies.
