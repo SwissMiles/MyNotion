@@ -20,6 +20,19 @@ export function seedState(): AppState {
     tasks: [],
     pages: [],
     grades: [],
+    flashcards: [],
+    sessions: [],
+  };
+}
+
+/** Fills in collections added after a state was saved (older localStorage
+ *  snapshots and backup files won't have them). */
+export function withStateDefaults(stored: AppState): AppState {
+  return {
+    ...stored,
+    grades: Array.isArray(stored.grades) ? stored.grades.map(migrateGrade) : [],
+    flashcards: Array.isArray(stored.flashcards) ? stored.flashcards : [],
+    sessions: Array.isArray(stored.sessions) ? stored.sessions : [],
   };
 }
 
@@ -35,10 +48,7 @@ function migrateGrade(entry: GradeEntry): GradeEntry {
 export function loadState(): AppState {
   const stored = readStoredJson<AppState>(STORAGE_KEY);
   if (!stored || !Array.isArray(stored.semesters)) return seedState();
-  return {
-    ...stored,
-    grades: Array.isArray(stored.grades) ? stored.grades.map(migrateGrade) : [],
-  };
+  return withStateDefaults(stored);
 }
 
 export function saveState(state: AppState): void {

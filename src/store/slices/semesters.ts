@@ -26,7 +26,8 @@ export function semestersReducer(state: AppState, action: SemestersAction): AppS
   }
 }
 
-/** Removing a semester also removes its courses, tasks, pages and grades. */
+/** Removing a semester also removes its courses, tasks, pages, grades,
+ *  flashcards and study sessions. */
 function deleteSemesterCascade(state: AppState, semesterId: ID): AppState {
   const semesters = state.semesters.filter((s) => s.id !== semesterId);
   const removedCourseIds = new Set(
@@ -41,5 +42,7 @@ function deleteSemesterCascade(state: AppState, semesterId: ID): AppState {
     tasks: state.tasks.filter((t) => t.semesterId !== semesterId),
     pages: state.pages.filter((p) => p.semesterId !== semesterId),
     grades: state.grades.filter((g) => !removedCourseIds.has(g.courseId)),
+    flashcards: state.flashcards.filter((c) => c.semesterId !== semesterId),
+    sessions: state.sessions.filter((s) => s.semesterId !== semesterId),
   };
 }

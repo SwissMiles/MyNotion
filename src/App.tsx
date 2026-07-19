@@ -2,6 +2,7 @@ import React from "react";
 import { StoreProvider } from "./store";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { NavigationProvider } from "./contexts/NavigationContext";
+import { FocusProvider } from "./contexts/FocusContext";
 import { QuickFindProvider, useQuickFind } from "./contexts/QuickFindContext";
 import { Sidebar } from "./features/layout/Sidebar";
 import { QuickFind } from "./features/quick-find/QuickFind";
@@ -12,9 +13,11 @@ export default function App() {
     <StoreProvider>
       <ThemeProvider>
         <NavigationProvider>
-          <QuickFindProvider>
-            <AppLayout />
-          </QuickFindProvider>
+          <FocusProvider>
+            <QuickFindProvider>
+              <AppLayout />
+            </QuickFindProvider>
+          </FocusProvider>
         </NavigationProvider>
       </ThemeProvider>
     </StoreProvider>

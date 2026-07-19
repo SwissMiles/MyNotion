@@ -1,4 +1,5 @@
 import type { AppState } from "../../types";
+import { withStateDefaults } from "../../store/persistence";
 
 /** Triggers a download of the whole app state as a JSON file. */
 export function downloadStateBackup(state: AppState): void {
@@ -16,7 +17,7 @@ export async function parseBackupFile(file: File): Promise<AppState | null> {
   try {
     const parsed = JSON.parse(await file.text());
     if (!parsed || !Array.isArray(parsed.semesters)) return null;
-    return parsed as AppState;
+    return withStateDefaults(parsed as AppState);
   } catch {
     return null;
   }

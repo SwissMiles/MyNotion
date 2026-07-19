@@ -559,3 +559,159 @@ kbd {
   flex-shrink: 0;
 }
 .qf-foot kbd { margin-right: 3px; }
+
+/* ---------- Calendar ---------- */
+.cal-toolbar {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.cal-nav { display: flex; align-items: center; gap: 6px; }
+.cal-month-label { font-size: 17px; font-weight: 600; margin-left: 8px; }
+.cal-toggle {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--text-2); cursor: pointer; user-select: none;
+}
+.cal-toggle input { accent-color: var(--accent); cursor: pointer; }
+.calendar { overflow: hidden; padding: 0; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-grid--head { background: var(--bg-2); border-bottom: 1px solid var(--border); }
+.cal-dow {
+  font-size: 12px; font-weight: 600; color: var(--text-2);
+  text-align: center; padding: 6px 4px;
+}
+.cal-cell {
+  min-height: 108px;
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  padding: 4px 5px 6px;
+  cursor: pointer;
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 0;
+}
+.cal-cell:nth-child(7n + 1) { border-left: none; }
+.cal-cell:hover { background: var(--bg-2); }
+.cal-cell--out { background: var(--bg-2); }
+.cal-cell--out .cal-daynum { color: var(--text-3); }
+.cal-cell--out:hover { background: var(--bg-3); }
+.cal-daynum { font-size: 12.5px; font-weight: 600; color: var(--text-2); padding: 0 2px 2px; }
+.cal-cell--today .cal-daynum {
+  color: #fff; background: var(--accent);
+  border-radius: 999px; width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center; padding: 0;
+}
+.cal-class {
+  font-size: 10.5px; line-height: 1.35;
+  color: var(--cal-class-color);
+  background: color-mix(in srgb, var(--cal-class-color) 12%, transparent);
+  border-radius: 4px; padding: 0 5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cal-task {
+  display: block; width: 100%; text-align: left;
+  border: none; cursor: pointer;
+  font-size: 11.5px; line-height: 1.45;
+  background: var(--bg-3);
+  border-left: 3px solid var(--cal-task-color);
+  border-radius: 4px; padding: 1px 5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cal-task:hover { background: color-mix(in srgb, var(--cal-task-color) 18%, var(--bg-3)); }
+.cal-task--done { text-decoration: line-through; color: var(--text-3); }
+.cal-task--exam {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  font-weight: 600;
+}
+
+/* ---------- Flashcards ---------- */
+.stat--action { display: flex; align-items: center; justify-content: center; }
+.deck-card { margin-top: 12px; padding: 10px 14px; }
+.deck-row { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.deck-name { font-weight: 600; }
+.deck-chevron { color: var(--text-3); font-size: 12px; }
+.deck-cards { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 6px; }
+.deck-empty { padding: 6px 4px; }
+.deck-card-row {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  border: none; background: none; cursor: pointer; text-align: left;
+  padding: 6px 8px; border-radius: 6px; font-size: 14px;
+}
+.deck-card-row:hover { background: var(--bg-2); }
+.deck-card-front {
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.study-wrap { max-width: 620px; margin: 6vh auto 0; }
+.study-top { display: flex; align-items: center; margin-bottom: 14px; }
+.study-card {
+  padding: 28px 30px; text-align: center; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.study-card--revealed { cursor: default; }
+.study-front { font-size: 21px; font-weight: 600; white-space: pre-wrap; }
+.study-back { font-size: 17px; white-space: pre-wrap; color: var(--text); }
+.study-card .block-divider { margin: 2px 0; align-self: stretch; }
+.study-flip-hint { font-size: 12.5px; color: var(--text-3); }
+.study-ratings { display: flex; gap: 10px; margin-top: 16px; }
+.study-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 6px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg);
+  font-size: 14px;
+}
+.study-btn:hover { background: var(--bg-2); }
+.study-btn-label { font-weight: 600; }
+.study-btn-interval { font-size: 11.5px; color: var(--text-3); }
+.study-btn--again .study-btn-label { color: var(--danger); }
+.study-btn--hard .study-btn-label { color: var(--warn); }
+.study-btn--good .study-btn-label { color: var(--accent); }
+.study-btn--easy .study-btn-label { color: var(--ok); }
+.study-done { padding: 40px 30px; text-align: center; }
+.study-done-icon { font-size: 40px; margin-bottom: 8px; }
+.study-done h2 { margin: 0 0 6px; }
+.study-done .btn { margin-top: 16px; }
+
+/* ---------- Focus ---------- */
+.focus-card {
+  text-align: center; padding: 30px 24px 24px; margin-bottom: 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.focus-card--break { background: color-mix(in srgb, var(--ok) 7%, var(--bg)); }
+.focus-phase {
+  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--text-2);
+}
+.focus-clock { font-size: 62px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.focus-setup { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.focus-setup select {
+  padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);
+}
+.focus-presets { display: flex; gap: 6px; }
+.focus-actions { display: flex; align-items: center; gap: 10px; }
+.focus-main-btn { padding: 8px 22px; font-size: 15px; }
+.focus-streak { font-size: 13px; }
+.focus-bar-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+.focus-bar-label {
+  width: 130px; flex-shrink: 0; display: flex; align-items: center; gap: 7px;
+  font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.focus-bar-track { flex: 1; height: 10px; border-radius: 5px; background: var(--bg-3); overflow: hidden; }
+.focus-bar-fill { height: 100%; width: var(--bar-width); background: var(--bar-color); border-radius: 5px; }
+.focus-bar-minutes { width: 60px; text-align: right; font-size: 13px; color: var(--text-2); }
+
+.focus-indicator {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.focus-indicator:hover { background: color-mix(in srgb, var(--accent) 20%, var(--bg-2)); }
+.focus-indicator--paused { opacity: 0.75; }
+.focus-indicator-time { font-variant-numeric: tabular-nums; font-size: 13px; }
+
+/* ---------- Dashboard study section ---------- */
+.study-section { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; }
+.study-nudge {
+  display: flex; align-items: center; gap: 10px;
+  border: none; background: none; cursor: pointer; text-align: left;
+  padding: 6px 8px; border-radius: 6px; font-size: 14px;
+}
+.study-nudge:hover { background: var(--bg-2); }
+.study-nudge-icon { font-size: 16px; }

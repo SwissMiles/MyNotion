@@ -5,6 +5,7 @@ import { SEARCH_SHORTCUT } from "../quick-find/platform";
 import { SemesterPicker } from "../semesters/SemesterPicker";
 import { SidebarNav } from "./SidebarNav";
 import { SidebarCourses } from "./SidebarCourses";
+import { FocusIndicator } from "./FocusIndicator";
 import { BackupControls } from "./BackupControls";
 
 export function Sidebar() {
@@ -30,6 +31,7 @@ export function Sidebar() {
       </div>
 
       <SemesterPicker />
+      <FocusIndicator />
       <SidebarNav />
       <SidebarCourses />
       <BackupControls />

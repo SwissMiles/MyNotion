@@ -5,6 +5,7 @@ import { useActiveSemester } from "../../store";
 import { SemesterStats } from "./SemesterStats";
 import { DueSoonSection } from "./DueSoonSection";
 import { TodaysClassesSection } from "./TodaysClassesSection";
+import { StudySection } from "./StudySection";
 import { CoursesSection } from "./CoursesSection";
 
 export function Dashboard() {
@@ -32,6 +33,7 @@ export function Dashboard() {
         <DueSoonSection />
         <div>
           <TodaysClassesSection />
+          <StudySection />
           <CoursesSection />
         </div>
       </div>

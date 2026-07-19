@@ -12,10 +12,12 @@ import { Modal } from "../../components/Modal";
 export function TaskModal({
   task,
   defaultCourseId,
+  defaultDue,
   onClose,
 }: {
   task: Task | null;
   defaultCourseId?: string | null;
+  defaultDue?: string;
   onClose: () => void;
 }) {
   const dispatch = useDispatch();
@@ -24,7 +26,7 @@ export function TaskModal({
     title: task?.title ?? "",
     courseId: task?.courseId ?? defaultCourseId ?? "",
     kind: task?.kind ?? ("assignment" as TaskKind),
-    due: task?.due ?? isoDate(),
+    due: task?.due ?? defaultDue ?? isoDate(),
     priority: task?.priority ?? ("medium" as TaskPriority),
     notes: task?.notes ?? "",
   });

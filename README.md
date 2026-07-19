@@ -40,6 +40,19 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
   (5 · points ⁄ max + 1). Course grades are weighted averages rounded to
   quarter grades (ETH-style); the semester average is credit-weighted. Failing
   grades are highlighted.
+- **Calendar** — month view merging assignment deadlines, exams (highlighted)
+  and your weekly classes. Click any day to add a task due that day, click a
+  task to edit it; exams stand out, done tasks are struck through.
+- **Flashcards with spaced repetition** — one deck per course plus a general
+  deck. Review due cards in a fullscreen study mode (click/space to flip,
+  rate **Again / Hard / Good / Easy**, keys 1–4); an SM-2-style scheduler
+  decides when each card comes back, and cards you find hard return sooner.
+  The sidebar and dashboard show how many cards are waiting.
+- **Focus timer (Pomodoro)** — 15/25/50-minute focus sessions with breaks,
+  tied to a course. Finished sessions are logged automatically and feed
+  study-time stats: minutes today, last 7 days, and a per-course breakdown so
+  you can see where your time actually goes. The countdown stays visible in
+  the sidebar (and the tab title) wherever you are in the app.
 - **Light & dark mode**, and **JSON export / import** for backups.
 
 All data is stored locally in your browser (`localStorage`) — no account, no
@@ -63,11 +76,13 @@ React 18 + TypeScript + Vite, zero other runtime dependencies.
 
 ```
 src/
-  types.ts             Domain models (Semester, Course, Task, Page, GradeEntry)
+  types.ts             Domain models (Semester, Course, Task, Page, GradeEntry,
+                       Flashcard, StudySession)
   constants.ts         Shared constants (colors, icons, nav items, options)
   store/               App state: context provider, domain slice reducers,
                        localStorage persistence + migrations, selectors
-  contexts/            Cross-cutting UI state: theme, navigation, Quick Find
+  contexts/            Cross-cutting UI state: theme, navigation, Quick Find,
+                       the app-wide focus timer
   hooks/               Generic reusable hooks (useWindowEvent, useFormState)
   utils/               Pure helpers: dates, grade math, course/meeting helpers,
                        safe storage access
@@ -75,7 +90,8 @@ src/
   features/            One folder per feature — each owns its views, components
                        and feature-specific logic:
                        layout, semesters, courses, tasks, notes, editor,
-                       grades, timetable, dashboard, quick-find
+                       grades, timetable, calendar, flashcards, focus,
+                       dashboard, quick-find
 ```
 
 Conventions: components read state through context hooks (`useAppState`,

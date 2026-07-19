@@ -19,7 +19,8 @@ export function coursesReducer(state: AppState, action: CoursesAction): AppState
   }
 }
 
-/** Removing a course also removes its tasks, pages and grades. */
+/** Removing a course also removes its tasks, pages, grades and flashcards.
+ *  Study sessions are kept (time studied is history) but detached from the course. */
 function deleteCourseCascade(state: AppState, courseId: ID): AppState {
   return {
     ...state,
@@ -27,5 +28,7 @@ function deleteCourseCascade(state: AppState, courseId: ID): AppState {
     tasks: state.tasks.filter((t) => t.courseId !== courseId),
     pages: state.pages.filter((p) => p.courseId !== courseId),
     grades: state.grades.filter((g) => g.courseId !== courseId),
+    flashcards: state.flashcards.filter((c) => c.courseId !== courseId),
+    sessions: state.sessions.map((s) => (s.courseId === courseId ? { ...s, courseId: null } : s)),
   };
 }

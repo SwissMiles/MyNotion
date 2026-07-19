@@ -5,6 +5,14 @@ export function isoDate(date: Date = new Date()): string {
   return date.toISOString().slice(0, 10);
 }
 
+/** "YYYY-MM-DD" using the local calendar date (isoDate converts via UTC,
+ *  which can land on the neighbouring day depending on the timezone). */
+export function isoDateLocal(date: Date = new Date()): string {
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
 export function fmtDate(iso: string): string {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return iso;
