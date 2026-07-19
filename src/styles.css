@@ -393,6 +393,53 @@ input, select, textarea { font: inherit; color: inherit; }
 .block-divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; width: 100%; }
 .editor-hint { font-size: 12.5px; color: var(--text-3); margin-top: 20px; }
 
+/* ---------- "/" command menu ---------- */
+.slash-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 22px;
+  z-index: 50;
+  width: 300px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.22);
+  padding: 4px 5px;
+}
+.slash-section {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--text-3);
+  padding: 7px 9px 3px;
+}
+.slash-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 6px 9px;
+  border: none; background: none; border-radius: 6px;
+  cursor: pointer; text-align: left; font-size: 14px;
+}
+.slash-item.selected { background: var(--bg-3); }
+.slash-icon {
+  width: 30px; height: 30px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 6px;
+  font-size: 12px; font-weight: 600; color: var(--text-2);
+}
+.slash-main { display: flex; flex-direction: column; min-width: 0; }
+.slash-title { line-height: 1.3; }
+.slash-desc {
+  font-size: 12px; color: var(--text-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.slash-foot {
+  border-top: 1px solid var(--border);
+  margin-top: 4px; padding: 7px 9px 3px;
+  display: flex; gap: 12px;
+  font-size: 11.5px; color: var(--text-3);
+}
+.slash-foot kbd { margin-right: 2px; }
+
 .page-list-item {
   display: flex; align-items: center; gap: 8px;
   padding: 7px 10px; border-radius: 6px; cursor: pointer;
