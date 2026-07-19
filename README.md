@@ -27,10 +27,14 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
   overdue and due-soon items are highlighted.
 - **Weekly timetable** — auto-generated from course meeting times, color-coded,
   weekend columns appear only if you have weekend classes.
-- **Notion-style notes** — block editor with markdown shortcuts:
-  `# ` heading, `## ` subheading, `- ` bullet, `[] ` to-do, `> ` quote,
-  ` ``` ` code, `---` divider. Enter continues lists, Backspace exits them,
-  ⌥↑/⌥↓ moves blocks. Pages can be general or attached to a course.
+- **Notion-style notes** — block editor with a **"/" command menu**: type `/`
+  in any block to get a filterable menu of block types (text, headings,
+  bulleted list, to-do, quote, code, divider). Keep typing to filter
+  (`/h`, `/todo`…), ↑/↓ to navigate, ↵ to insert, esc to dismiss — or click.
+  Markdown shortcuts work too: `# ` heading, `## ` subheading, `- ` bullet,
+  `[] ` to-do, `> ` quote, ` ``` ` code, `---` divider. Enter continues
+  lists, Backspace exits them, ⌥↑/⌥↓ moves blocks. Pages can be general or
+  attached to a course.
 - **Grades (Swiss system)** — grades on the Swiss 1–6 scale (6 best,
   4.0 = pass). Enter grades directly or from points using the standard formula
   (5 · points ⁄ max + 1). Course grades are weighted averages rounded to

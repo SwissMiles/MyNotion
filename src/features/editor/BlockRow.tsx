@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import type { Block, BlockType } from "../../types";
+import { SlashMenu } from "./SlashMenu";
+import type { SlashItem } from "./slashMenu";
 
 const PLACEHOLDERS: Record<Exclude<BlockType, "divider">, string> = {
   h1: "Heading 1",
@@ -8,7 +10,7 @@ const PLACEHOLDERS: Record<Exclude<BlockType, "divider">, string> = {
   bullet: "List item",
   code: "Code",
   quote: "Quote",
-  text: "Type something, or '/' won't help — try '# '…",
+  text: "Type '/' for commands…",
 };
 
 export function BlockRow({
@@ -19,14 +21,24 @@ export function BlockRow({
   onKey,
   onToggle,
   onRemove,
+  slashItems,
+  slashSelected,
+  onSlashHover,
+  onSlashPick,
+  onSlashClose,
 }: {
   block: Block;
   autoFocus: boolean;
   onFocusDone: () => void;
-  onText: (text: string) => void;
+  onText: (text: string, caret: number) => void;
   onKey: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onToggle: () => void;
   onRemove: () => void;
+  slashItems: SlashItem[] | null; // null = menu closed for this block
+  slashSelected: number;
+  onSlashHover: (index: number) => void;
+  onSlashPick: (index: number) => void;
+  onSlashClose: () => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -61,9 +73,18 @@ export function BlockRow({
         className={`block-input ${block.type === "todo" && block.checked ? "checked-text" : ""}`}
         value={block.text}
         placeholder={PLACEHOLDERS[block.type]}
-        onChange={(e) => onText(e.target.value)}
+        onChange={(e) => onText(e.target.value, e.target.selectionStart ?? e.target.value.length)}
         onKeyDown={onKey}
+        onBlur={onSlashClose}
       />
+      {slashItems && (
+        <SlashMenu
+          items={slashItems}
+          selected={slashSelected}
+          onHover={onSlashHover}
+          onPick={onSlashPick}
+        />
+      )}
     </div>
   );
 }
