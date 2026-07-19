@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useActiveSemester } from "../store";
 import { DAY_NAMES } from "../lib";
+import { NoSemesterNotice } from "../components/ui";
+import { SemesterModal } from "../components/Sidebar";
 import type { View } from "../App";
 
 const START_HOUR = 7;
@@ -15,6 +17,7 @@ function toMin(t: string): number {
 export function Timetable({ setView }: { setView: (v: View) => void }) {
   const { semester, courses } = useActiveSemester();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [showSemModal, setShowSemModal] = useState(false);
 
   const events = courses.flatMap((c) => c.meetings.map((m) => ({ course: c, meeting: m })));
   const showWeekend = events.some((e) => e.meeting.day >= 5);
@@ -31,7 +34,17 @@ export function Timetable({ setView }: { setView: (v: View) => void }) {
     el.scrollLeft = Math.max(0, 52 + dayWidth * todayIdx - (el.clientWidth - dayWidth) / 2);
   }, [days, todayIdx]);
 
-  if (!semester) return null;
+  if (!semester) {
+    return (
+      <>
+        <NoSemesterNotice
+          message="Create a semester to see your weekly timetable."
+          onCreateSemester={() => setShowSemModal(true)}
+        />
+        {showSemModal && <SemesterModal onClose={() => setShowSemModal(false)} />}
+      </>
+    );
+  }
 
   const hours: number[] = [];
   for (let h = START_HOUR; h < END_HOUR; h++) hours.push(h);

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useActiveSemester } from "../store";
 import { TaskList, TaskModal, TaskRow } from "../components/tasks";
+import { NoSemesterNotice } from "../components/ui";
+import { SemesterModal } from "../components/Sidebar";
 import { daysUntil, sortByDue } from "../lib";
 import type { Task, TaskKind } from "../types";
 
@@ -30,8 +32,19 @@ export function TasksView() {
   const [filter, setFilter] = useState<Filter>("open");
   const [kindFilter, setKindFilter] = useState<TaskKind | "all">("all");
   const [courseFilter, setCourseFilter] = useState<string>("all");
+  const [showSemModal, setShowSemModal] = useState(false);
 
-  if (!semester) return null;
+  if (!semester) {
+    return (
+      <>
+        <NoSemesterNotice
+          message="Create a semester to start tracking assignments and exams."
+          onCreateSemester={() => setShowSemModal(true)}
+        />
+        {showSemModal && <SemesterModal onClose={() => setShowSemModal(false)} />}
+      </>
+    );
+  }
 
   const filtered = tasks.filter((t) => {
     if (kindFilter !== "all" && t.kind !== kindFilter) return false;

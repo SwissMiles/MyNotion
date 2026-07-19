@@ -64,6 +64,24 @@ export function Field({ label, children }: { label: string; children: React.Reac
   );
 }
 
+/** Shown on any page that needs an active semester but none exists yet. */
+export function NoSemesterNotice({
+  message,
+  onCreateSemester,
+}: {
+  message: string;
+  onCreateSemester: () => void;
+}) {
+  return (
+    <div className="page-wrap">
+      <div className="empty empty--action">
+        <p>{message}</p>
+        <button className="btn primary" onClick={onCreateSemester}>+ Create a semester</button>
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Toasts ---------- */
 
 type ToastAction = { label: string; run: () => void };

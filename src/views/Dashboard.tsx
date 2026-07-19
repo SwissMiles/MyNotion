@@ -4,16 +4,26 @@ import { DAY_NAMES, daysUntil, fmtDateLong, isoDateLocal, semesterAverage, sortB
 import { dueCards } from "../srs";
 import { fmtMinutes, sessionsOnDay, totalMinutes } from "../sessions";
 import { TaskList, TaskModal } from "../components/tasks";
+import { NoSemesterNotice } from "../components/ui";
+import { SemesterModal } from "../components/Sidebar";
 import type { Task } from "../types";
 import type { View } from "../App";
 
 export function Dashboard({ setView }: { setView: (v: View) => void }) {
   const { semester, courses, tasks, grades, flashcards, sessions } = useActiveSemester();
   const [modalTask, setModalTask] = useState<Task | null | "new">(null);
+  const [showSemModal, setShowSemModal] = useState(false);
   const dueCardCount = dueCards(flashcards).length;
   const minutesToday = totalMinutes(sessionsOnDay(sessions, isoDateLocal()));
 
-  if (!semester) return <div className="page-wrap"><div className="empty">Create a semester to get started.</div></div>;
+  if (!semester) {
+    return (
+      <>
+        <NoSemesterNotice message="Create a semester to get started." onCreateSemester={() => setShowSemModal(true)} />
+        {showSemModal && <SemesterModal onClose={() => setShowSemModal(false)} />}
+      </>
+    );
+  }
 
   const open = tasks.filter((t) => !t.done);
   const upcoming = sortByDue(open).slice(0, 6);

@@ -1028,6 +1028,7 @@ body.is-dragging .block-btn.handle { cursor: grabbing; }
 .stat-row--3 { grid-template-columns: repeat(3, 1fr); }
 .stat--action { display: flex; align-items: center; justify-content: center; }
 .empty--spaced { margin-top: 16px; }
+.empty--action { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .deck-card { margin-top: 12px; padding: 10px 14px; }
 .deck-row { display: flex; align-items: center; gap: 10px; cursor: pointer; }
 .deck-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; display: inline-block; }
