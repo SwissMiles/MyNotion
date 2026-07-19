@@ -59,7 +59,8 @@ npm run dev      # http://localhost:5173
 ```
 
 Production build: `npm run build` (output in `dist/`, deployable to any static
-host — GitHub Pages, Netlify, Vercel…).
+host — GitHub Pages, Netlify, Vercel…). Merges to `main` auto-deploy to GitHub
+Pages via `.github/workflows/deploy.yml`.
 
 ## Tech
 
