@@ -36,7 +36,7 @@ One global `AppState` (`src/types.ts`) holds all domain data: semesters, courses
 
 ### UI
 
-- `src/contexts/` — cross-cutting UI state (theme, navigation, Quick Find, focus timer), separate from domain state. Navigation is a simple `{ view, courseId, pageId }` object in `NavigationContext`, not a router; `src/ActiveView.tsx` switches on it.
+- `src/contexts/` — cross-cutting UI state (theme, navigation, Quick Find, focus timer, undo toast), separate from domain state. Navigation is a simple `{ view, courseId, pageId }` object in `NavigationContext`, not a router; `src/ActiveView.tsx` switches on it, the last view is persisted to localStorage, and browser back/forward walk the view history via pushState. Destructive dispatches should go through `useUndoableDispatch` (`UndoContext`), which snapshots state and offers an Undo toast.
 - `src/features/<name>/` — one folder per feature owning its views, components and logic (layout, semesters, courses, tasks, notes, editor, grades, timetable, dashboard, quick-find, calendar, flashcards, focus, auth, cloud). `src/components/` holds only small shared primitives (Modal, Field…).
 - **Adding a feature**: folder under `src/features/`, slice under `src/store/slices/` if it needs state, wire the view into `src/ActiveView.tsx` and navigation into the sidebar/mobile tab bar in `src/features/layout/`.
 

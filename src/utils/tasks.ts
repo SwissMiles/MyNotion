@@ -1,5 +1,5 @@
 import type { Task, TaskRepeat } from "../types";
-import { daysUntil, fmtDate, isoDate } from "./date";
+import { daysUntil, fmtDate, isoDate, isoDatePlusDays } from "./date";
 import { uid } from "./id";
 
 export type DueTone = "overdue" | "soon" | "ok";
@@ -16,6 +16,16 @@ export function dueLabel(iso: string): DueInfo {
   if (days === 1) return { text: "Tomorrow", tone: "soon" };
   if (days <= 7) return { text: `In ${days} days`, tone: "soon" };
   return { text: fmtDate(iso), tone: "ok" };
+}
+
+/** One day later than the due date — but never earlier than tomorrow, so
+ *  snoozing an overdue task always parks it on tomorrow. */
+export function snoozedDue(dueIso: string): string {
+  const tomorrow = isoDatePlusDays(1);
+  const day = dueIso.slice(0, 10);
+  if (day < tomorrow) return tomorrow;
+  const [year, month, date] = day.split("-").map(Number);
+  return isoDatePlusDays(1, new Date(year, month - 1, date));
 }
 
 export function sortByDue(tasks: Task[]): Task[] {

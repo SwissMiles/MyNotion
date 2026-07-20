@@ -9,6 +9,13 @@ export function isoDate(date: Date = new Date()): string {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
+/** "YYYY-MM-DD" for today shifted by the given number of days. */
+export function isoDatePlusDays(days: number, from: Date = new Date()): string {
+  const date = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  date.setDate(date.getDate() + days);
+  return isoDate(date);
+}
+
 export function fmtDate(iso: string): string {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return iso;

@@ -1,10 +1,10 @@
 import React from "react";
 import type { GradeEntry } from "../../types";
 import { fmtGrade, PASS_GRADE } from "../../utils/grades";
-import { useDispatch } from "../../store";
+import { useUndoableDispatch } from "../../contexts/UndoContext";
 
 export function GradeTable({ grades, onEdit }: { grades: GradeEntry[]; onEdit: (grade: GradeEntry) => void }) {
-  const dispatch = useDispatch();
+  const dispatchUndoable = useUndoableDispatch();
 
   return (
     <table className="grade-table">
@@ -28,7 +28,12 @@ export function GradeTable({ grades, onEdit }: { grades: GradeEntry[]; onEdit: (
             <td>{grade.weight}%</td>
             <td className="cell-right">
               <button className="icon-btn" onClick={() => onEdit(grade)}>✎</button>
-              <button className="icon-btn" onClick={() => dispatch({ type: "deleteGrade", id: grade.id })}>
+              <button
+                className="icon-btn"
+                onClick={() =>
+                  dispatchUndoable(`Deleted “${grade.name}”`, { type: "deleteGrade", id: grade.id })
+                }
+              >
                 🗑
               </button>
             </td>

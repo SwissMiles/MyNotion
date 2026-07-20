@@ -5,6 +5,8 @@ export type TasksAction =
   | { type: "addTask"; task: Task }
   | { type: "updateTask"; task: Task }
   | { type: "deleteTask"; id: ID }
+  | { type: "deleteTasks"; ids: ID[] }
+  | { type: "rescheduleTasks"; ids: ID[]; due: string }
   | { type: "toggleTask"; id: ID };
 
 export function tasksReducer(state: AppState, action: TasksAction): AppState {
@@ -18,6 +20,17 @@ export function tasksReducer(state: AppState, action: TasksAction): AppState {
       };
     case "deleteTask":
       return { ...state, tasks: state.tasks.filter((t) => t.id !== action.id) };
+    case "deleteTasks": {
+      const ids = new Set(action.ids);
+      return { ...state, tasks: state.tasks.filter((t) => !ids.has(t.id)) };
+    }
+    case "rescheduleTasks": {
+      const ids = new Set(action.ids);
+      return {
+        ...state,
+        tasks: state.tasks.map((t) => (ids.has(t.id) ? { ...t, due: action.due } : t)),
+      };
+    }
     case "toggleTask": {
       const task = state.tasks.find((t) => t.id === action.id);
       if (!task) return state;

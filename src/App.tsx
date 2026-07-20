@@ -12,12 +12,15 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { FocusProvider } from "./contexts/FocusContext";
 import { NavigationProvider, useNavigation } from "./contexts/NavigationContext";
 import { QuickFindProvider, useQuickFind } from "./contexts/QuickFindContext";
+import { UndoProvider } from "./contexts/UndoContext";
 import { useIsMobile } from "./hooks/useMediaQuery";
 import { useWindowEvent } from "./hooks/useWindowEvent";
 import { Sidebar } from "./features/layout/Sidebar";
 import { MobileTopBar } from "./features/layout/MobileTopBar";
 import { MobileTabBar } from "./features/layout/MobileTabBar";
 import { QuickFind } from "./features/quick-find/QuickFind";
+import { GlobalShortcuts } from "./features/layout/GlobalShortcuts";
+import { useDocumentTitle } from "./features/layout/useDocumentTitle";
 import { SignInScreen } from "./features/auth/SignInScreen";
 import { CloudSync } from "./features/cloud/CloudSync";
 import { clerkConfigured, cloudConfigured } from "./config";
@@ -66,17 +69,19 @@ function Workspace({ userId, account }: { userId: string | null; account: React.
     <StoreProvider key={userId ?? "local"} userId={userId}>
       <ThemeProvider>
         <FocusProvider>
-          <NavigationProvider>
-            <QuickFindProvider>
-              {userId && cloudConfigured && <CloudSync />}
-              {userId && !cloudConfigured && (
-                <div className="sync-badge error">
-                  ⚠️ Supabase not configured — data is only on this device
-                </div>
-              )}
-              <AppLayout account={account} />
-            </QuickFindProvider>
-          </NavigationProvider>
+          <UndoProvider>
+            <NavigationProvider>
+              <QuickFindProvider>
+                {userId && cloudConfigured && <CloudSync />}
+                {userId && !cloudConfigured && (
+                  <div className="sync-badge error">
+                    ⚠️ Supabase not configured — data is only on this device
+                  </div>
+                )}
+                <AppLayout account={account} />
+              </QuickFindProvider>
+            </NavigationProvider>
+          </UndoProvider>
         </FocusProvider>
       </ThemeProvider>
     </StoreProvider>
@@ -88,6 +93,7 @@ function AppLayout({ account }: { account: React.ReactNode }) {
   const { view } = useNavigation();
   const isMobile = useIsMobile();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  useDocumentTitle();
 
   // Navigating (from the drawer or anywhere else) should reveal the content.
   useEffect(() => setDrawerOpen(false), [view]);
@@ -115,6 +121,7 @@ function AppLayout({ account }: { account: React.ReactNode }) {
       </main>
       {isMobile && <MobileTabBar />}
       {isOpen && <QuickFind />}
+      <GlobalShortcuts />
     </div>
   );
 }

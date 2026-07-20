@@ -13,6 +13,17 @@ export function createEmptyPage(semesterId: string, courseId: string | null, tit
   };
 }
 
+/** A copy of the page with fresh ids (blocks included) ready to insert. */
+export function duplicatePage(page: Page): Page {
+  return {
+    ...page,
+    id: uid(),
+    title: `${page.title || "Untitled"} (copy)`,
+    blocks: page.blocks.map((block) => ({ ...block, id: uid() })),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 export function sortByRecentlyUpdated(pages: Page[]): Page[] {
   return [...pages].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }

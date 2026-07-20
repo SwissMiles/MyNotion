@@ -19,16 +19,23 @@ export function Sidebar({
   /** Signed-in account button (Clerk) when auth is configured. */
   account?: React.ReactNode;
 }) {
-  const { theme, toggleTheme } = useTheme();
+  const { setting, cycleTheme } = useTheme();
   const quickFind = useQuickFind();
+
+  const themeIcon = setting === "light" ? "☀️" : setting === "dark" ? "🌙" : "🌓";
+  const themeLabel = setting === "system" ? "matches your device" : setting;
 
   return (
     <aside className={`sidebar ${open ? "sidebar--open" : ""}`}>
       <div className="sidebar-head">
         <span className="logo">🎓</span>
         <span className="name">MyNotion</span>
-        <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
-          {theme === "dark" ? "☀️" : "🌙"}
+        <button
+          className="icon-btn"
+          onClick={cycleTheme}
+          title={`Theme: ${themeLabel} — click to change`}
+        >
+          {themeIcon}
         </button>
         {account && <span className="sidebar-account">{account}</span>}
         {onClose && (

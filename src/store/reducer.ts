@@ -32,6 +32,8 @@ export function appReducer(state: AppState, action: Action): AppState {
     case "addTask":
     case "updateTask":
     case "deleteTask":
+    case "deleteTasks":
+    case "rescheduleTasks":
     case "toggleTask":
       return tasksReducer(state, action);
     case "addPage":

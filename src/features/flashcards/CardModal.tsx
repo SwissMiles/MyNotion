@@ -4,6 +4,7 @@ import { uid } from "../../utils/id";
 import { newCardScheduling } from "../../utils/srs";
 import { courseShortLabel } from "../../utils/courses";
 import { useActiveSemester, useDispatch } from "../../store";
+import { useUndoableDispatch } from "../../contexts/UndoContext";
 import { Field } from "../../components/Field";
 import { Modal } from "../../components/Modal";
 
@@ -17,6 +18,7 @@ export function CardModal({
   onClose: () => void;
 }) {
   const dispatch = useDispatch();
+  const dispatchUndoable = useUndoableDispatch();
   const { semester, courses } = useActiveSemester();
   const [front, setFront] = useState(card?.front ?? "");
   const [back, setBack] = useState(card?.back ?? "");
@@ -74,7 +76,7 @@ export function CardModal({
           <button
             className="btn danger"
             onClick={() => {
-              dispatch({ type: "deleteFlashcard", id: card.id });
+              dispatchUndoable("Flashcard deleted", { type: "deleteFlashcard", id: card.id });
               onClose();
             }}
           >
