@@ -1,58 +1,120 @@
 import React, { useEffect, useState } from "react";
+import {
+  AuthenticateWithRedirectCallback,
+  ClerkLoading,
+  SignedIn,
+  SignedOut,
+  UserButton,
+  useUser,
+} from "@clerk/clerk-react";
 import { StoreProvider } from "./store";
-import { Sidebar } from "./components/Sidebar";
-import { Dashboard } from "./views/Dashboard";
-import { TasksView } from "./views/Tasks";
-import { Timetable } from "./views/Timetable";
-import { GradesView } from "./views/Grades";
-import { NotesView, PageView } from "./views/Notes";
-import { CourseView, type CourseTab } from "./views/Course";
-
-export type View =
-  | { kind: "dashboard" }
-  | { kind: "tasks" }
-  | { kind: "timetable" }
-  | { kind: "grades" }
-  | { kind: "notes" }
-  | { kind: "course"; courseId: string; tab?: CourseTab }
-  | { kind: "page"; pageId: string; from?: View };
-
-const THEME_KEY = "mynotion-theme";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { FocusProvider } from "./contexts/FocusContext";
+import { NavigationProvider, useNavigation } from "./contexts/NavigationContext";
+import { QuickFindProvider, useQuickFind } from "./contexts/QuickFindContext";
+import { useIsMobile } from "./hooks/useMediaQuery";
+import { useWindowEvent } from "./hooks/useWindowEvent";
+import { Sidebar } from "./features/layout/Sidebar";
+import { MobileTopBar } from "./features/layout/MobileTopBar";
+import { MobileTabBar } from "./features/layout/MobileTabBar";
+import { QuickFind } from "./features/quick-find/QuickFind";
+import { SignInScreen } from "./features/auth/SignInScreen";
+import { CloudSync } from "./features/cloud/CloudSync";
+import { clerkConfigured, cloudConfigured } from "./config";
+import { ActiveView } from "./ActiveView";
 
 export default function App() {
-  const [view, setViewRaw] = useState<View>({ kind: "dashboard" });
-  const [lastListView, setLastListView] = useState<View>({ kind: "notes" });
-  const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) ?? "light");
+  // without a Clerk key the app runs exactly as before: local-only, no login
+  if (!clerkConfigured) {
+    return <Workspace userId={null} account={null} />;
+  }
 
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem(THEME_KEY, theme);
-  }, [theme]);
-
-  function setView(v: View) {
-    if (v.kind !== "page") setLastListView(v);
-    setViewRaw(v);
+  if (window.location.pathname.endsWith("/sso-callback")) {
+    return <AuthenticateWithRedirectCallback />;
   }
 
   return (
-    <StoreProvider>
-      <div className="app">
-        <Sidebar
-          view={view}
-          setView={setView}
-          theme={theme}
-          toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
-        />
-        <main className="main">
-          {view.kind === "dashboard" && <Dashboard setView={setView} />}
-          {view.kind === "tasks" && <TasksView />}
-          {view.kind === "timetable" && <Timetable setView={setView} />}
-          {view.kind === "grades" && <GradesView setView={setView} />}
-          {view.kind === "notes" && <NotesView setView={setView} />}
-          {view.kind === "course" && <CourseView courseId={view.courseId} tab={view.tab} setView={setView} key={view.courseId + (view.tab ?? "")} />}
-          {view.kind === "page" && <PageView pageId={view.pageId} onBack={() => setViewRaw(lastListView)} />}
-        </main>
-      </div>
+    <>
+      <ClerkLoading>
+        <div className="auth-screen">
+          <div className="muted">Loading…</div>
+        </div>
+      </ClerkLoading>
+      <SignedOut>
+        <SignInScreen />
+      </SignedOut>
+      <SignedIn>
+        <SignedInWorkspace />
+      </SignedIn>
+    </>
+  );
+}
+
+function SignedInWorkspace() {
+  const { user } = useUser();
+  if (!user) return null;
+  return (
+    <Workspace
+      userId={user.id}
+      account={<UserButton afterSignOutUrl={import.meta.env.BASE_URL} />}
+    />
+  );
+}
+
+function Workspace({ userId, account }: { userId: string | null; account: React.ReactNode }) {
+  return (
+    <StoreProvider key={userId ?? "local"} userId={userId}>
+      <ThemeProvider>
+        <FocusProvider>
+          <NavigationProvider>
+            <QuickFindProvider>
+              {userId && cloudConfigured && <CloudSync />}
+              {userId && !cloudConfigured && (
+                <div className="sync-badge error">
+                  ⚠️ Supabase not configured — data is only on this device
+                </div>
+              )}
+              <AppLayout account={account} />
+            </QuickFindProvider>
+          </NavigationProvider>
+        </FocusProvider>
+      </ThemeProvider>
     </StoreProvider>
+  );
+}
+
+function AppLayout({ account }: { account: React.ReactNode }) {
+  const { isOpen } = useQuickFind();
+  const { view } = useNavigation();
+  const isMobile = useIsMobile();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Navigating (from the drawer or anywhere else) should reveal the content.
+  useEffect(() => setDrawerOpen(false), [view]);
+  useEffect(() => {
+    if (!isMobile) setDrawerOpen(false);
+  }, [isMobile]);
+
+  useWindowEvent("keydown", (e) => {
+    if (e.key === "Escape" && drawerOpen) setDrawerOpen(false);
+  });
+
+  return (
+    <div className={`app ${isMobile ? "app--mobile" : ""}`}>
+      {isMobile && <MobileTopBar onMenu={() => setDrawerOpen(true)} />}
+      <Sidebar
+        open={drawerOpen}
+        onClose={isMobile ? () => setDrawerOpen(false) : undefined}
+        account={account}
+      />
+      {isMobile && drawerOpen && (
+        <div className="drawer-backdrop" onClick={() => setDrawerOpen(false)} />
+      )}
+      <main className="main">
+        <ActiveView />
+      </main>
+      {isMobile && <MobileTabBar />}
+      {isOpen && <QuickFind />}
+    </div>
   );
 }
