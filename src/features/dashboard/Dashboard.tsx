@@ -2,7 +2,9 @@ import React from "react";
 import { fmtDateLong, weeksUntil } from "../../utils/date";
 import { pluralize } from "../../utils/format";
 import { useActiveSemester } from "../../store";
+import { NoSemesterNotice } from "../../components/NoSemesterNotice";
 import { SemesterStats } from "./SemesterStats";
+import { StudySection } from "./StudySection";
 import { DueSoonSection } from "./DueSoonSection";
 import { TodaysClassesSection } from "./TodaysClassesSection";
 import { CoursesSection } from "./CoursesSection";
@@ -11,11 +13,7 @@ export function Dashboard() {
   const { semester } = useActiveSemester();
 
   if (!semester) {
-    return (
-      <div className="page-wrap">
-        <div className="empty">Create a semester to get started.</div>
-      </div>
-    );
+    return <NoSemesterNotice message="Create a semester to get started." />;
   }
 
   return (
@@ -32,6 +30,7 @@ export function Dashboard() {
         <DueSoonSection />
         <div>
           <TodaysClassesSection />
+          <StudySection />
           <CoursesSection />
         </div>
       </div>

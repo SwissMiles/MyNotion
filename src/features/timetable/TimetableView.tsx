@@ -6,6 +6,7 @@ import { cssVars } from "../../utils/cssVars";
 import { useActiveSemester } from "../../store";
 import { useNavigation } from "../../contexts/NavigationContext";
 import { useIsMobile } from "../../hooks/useMediaQuery";
+import { NoSemesterNotice } from "../../components/NoSemesterNotice";
 import { DayAgenda } from "./DayAgenda";
 
 const START_HOUR = 7;
@@ -15,7 +16,9 @@ const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR
 export function TimetableView() {
   const { semester, courses } = useActiveSemester();
   const isMobile = useIsMobile();
-  if (!semester) return null;
+  if (!semester) {
+    return <NoSemesterNotice message="Create a semester to build your weekly timetable." />;
+  }
 
   const events = allMeetings(courses);
   const showWeekend = events.some((e) => e.meeting.day >= 5);

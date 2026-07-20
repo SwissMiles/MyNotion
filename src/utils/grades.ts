@@ -40,6 +40,23 @@ export function fmtGrade(grade: number): string {
   return String(Number.isInteger(rounded * 4) ? rounded * 4 / 4 : rounded.toFixed(2));
 }
 
+/**
+ * Average grade needed on the not-yet-graded weight (assuming weights total
+ * 100%) so the final course average reaches `target`. Null when everything
+ * is already graded — there's nothing left to influence.
+ */
+export function requiredGrade(
+  grades: GradeEntry[],
+  target: number,
+): { remaining: number; needed: number } | null {
+  const valid = grades.filter((g) => g.weight > 0 && g.grade >= 1 && g.grade <= 6);
+  const usedWeight = valid.reduce((sum, g) => sum + g.weight, 0);
+  const remaining = 100 - usedWeight;
+  if (remaining <= 0) return null;
+  const earned = valid.reduce((sum, g) => sum + g.grade * g.weight, 0);
+  return { remaining, needed: (target * 100 - earned) / remaining };
+}
+
 /** Credit-weighted semester average (1–6) across courses that have any grades. */
 export function semesterAverage(courses: Course[], grades: GradeEntry[]): number | null {
   let creditSum = 0;

@@ -6,12 +6,19 @@ import { loadState, saveState } from "./persistence";
 const StateContext = createContext<AppState | null>(null);
 const DispatchContext = createContext<React.Dispatch<Action> | null>(null);
 
-export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(appReducer, undefined, loadState);
+export function StoreProvider({
+  userId = null,
+  children,
+}: {
+  /** Clerk user id when signed in; null keeps the pre-auth local-only key. */
+  userId?: string | null;
+  children: React.ReactNode;
+}) {
+  const [state, dispatch] = useReducer(appReducer, userId, loadState);
 
   useEffect(() => {
-    saveState(state);
-  }, [state]);
+    saveState(state, userId);
+  }, [state, userId]);
 
   return (
     <StateContext.Provider value={state}>

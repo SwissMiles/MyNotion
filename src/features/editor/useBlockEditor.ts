@@ -4,6 +4,8 @@ import { createBlock } from "./blocks";
 import { matchMarkdownShortcut } from "./markdownShortcuts";
 import { filterSlashItems, type SlashItem } from "./slashMenu";
 
+export const MAX_INDENT = 4;
+
 /** Open "/" command menu: which block it's anchored to, where the query
  *  starts (index right after the slash), what's been typed, and which
  *  item is highlighted. */
@@ -14,15 +16,31 @@ interface SlashState {
   selected: number;
 }
 
+/** Which block should grab focus after the next render, and where the
+ *  caret goes (end of text when omitted). */
+export interface PendingFocus {
+  id: string;
+  caret?: number;
+}
+
+export function isListType(type: BlockType): boolean {
+  return type === "bullet" || type === "todo" || type === "numbered";
+}
+
+/** Block types that have no editable textarea. */
+export function isNonText(type: BlockType): boolean {
+  return type === "divider" || type === "image";
+}
+
 /**
  * All block-list editing behavior for the editor: markdown conversions,
- * the "/" command menu, Enter/Backspace handling, list continuation and
- * block reordering. The component only renders; this hook owns the operations.
+ * the "/" command menu, Enter/Backspace handling (split & merge at the
+ * caret), list continuation, indenting and block reordering. The component
+ * only renders; this hook owns the operations.
  */
 export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => void) {
-  // Which block should grab focus after the next render (e.g. a freshly
-  // inserted one). A ref, not state: it must not trigger renders itself.
-  const pendingFocusId = useRef<string | null>(null);
+  // A ref, not state: it must not trigger renders itself.
+  const pendingFocus = useRef<PendingFocus | null>(null);
 
   const [slash, setSlash] = useState<SlashState | null>(null);
   const slashItems = useMemo(() => (slash ? filterSlashItems(slash.query) : []), [slash]);
@@ -38,17 +56,23 @@ export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => v
 
   function insertAfter(index: number, type: BlockType = "text") {
     const block = createBlock(type);
-    pendingFocusId.current = block.id;
+    pendingFocus.current = { id: block.id };
+    onChange([...list.slice(0, index + 1), block, ...list.slice(index + 1)]);
+  }
+
+  /** Insert an image block (used by the paste handler). */
+  function insertImageAfter(index: number, url: string) {
+    const block: Block = { ...createBlock("image"), url };
     onChange([...list.slice(0, index + 1), block, ...list.slice(index + 1)]);
   }
 
   function remove(index: number) {
     if (list.length === 1) {
-      onChange([{ ...list[0], type: "text", text: "" }]);
+      onChange([{ ...list[0], type: "text", text: "", checked: false, indent: 0, url: undefined }]);
       return;
     }
     const neighbor = list[index - 1] ?? list[index + 1];
-    pendingFocusId.current = neighbor?.id ?? null;
+    pendingFocus.current = neighbor && !isNonText(neighbor.type) ? { id: neighbor.id } : null;
     onChange(list.filter((_, i) => i !== index));
   }
 
@@ -57,8 +81,23 @@ export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => v
     if (target < 0 || target >= list.length) return;
     const next = [...list];
     [next[index], next[target]] = [next[target], next[index]];
-    pendingFocusId.current = next[target].id;
+    if (!isNonText(next[target].type)) pendingFocus.current = { id: next[target].id };
     onChange(next);
+  }
+
+  /** Move the block at `from` so it sits at position `to` (drag & drop). */
+  function reorder(from: number, to: number) {
+    if (to === from || to === from + 1) return;
+    const next = [...list];
+    const [moving] = next.splice(from, 1);
+    next.splice(to > from ? to - 1 : to, 0, moving);
+    onChange(next);
+  }
+
+  function duplicate(index: number) {
+    const copy: Block = { ...list[index], id: createBlock().id };
+    if (!isNonText(copy.type)) pendingFocus.current = { id: copy.id };
+    onChange([...list.slice(0, index + 1), copy, ...list.slice(index + 1)]);
   }
 
   /** Turn `block` into a divider, moving any leftover text to a follower
@@ -68,7 +107,7 @@ export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => v
       i === index ? { ...b, type: "divider" as BlockType, text: "" } : b,
     );
     const follower = { ...createBlock(), text: leftoverText };
-    pendingFocusId.current = follower.id;
+    pendingFocus.current = { id: follower.id, caret: 0 };
     onChange([...converted.slice(0, index + 1), follower, ...converted.slice(index + 1)]);
   }
 
@@ -104,6 +143,7 @@ export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => v
     const text = block.text.slice(0, slash.anchor - 1) + block.text.slice(slash.anchor + slash.query.length);
     setSlash(null);
     if (item.type === "divider") convertToDivider(index, text);
+    // image blocks have no textarea to focus — the picker takes over
     else update(block.id, { type: item.type, text });
   }
 
@@ -124,6 +164,8 @@ export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => v
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>, block: Block, index: number) {
+    const el = event.currentTarget;
+
     if (slash && slash.blockId === block.id) {
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         event.preventDefault();
@@ -143,19 +185,77 @@ export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => v
         return;
       }
     }
+
     if (event.key === "Enter" && !event.shiftKey && block.type !== "code") {
       event.preventDefault();
-      // continue lists: new bullet/todo after a non-empty one, exit after an empty one
-      if ((block.type === "bullet" || block.type === "todo") && block.text === "") {
-        update(block.id, { type: "text" });
-      } else {
-        insertAfter(index, block.type === "bullet" || block.type === "todo" ? block.type : "text");
+      // empty list item: outdent first, then exit the list
+      if (isListType(block.type) && block.text === "") {
+        if ((block.indent ?? 0) > 0) update(block.id, { indent: (block.indent ?? 0) - 1 });
+        else update(block.id, { type: "text" });
+        return;
       }
-    } else if (event.key === "Backspace" && block.text === "") {
+      // split the block at the caret; lists continue as the same list type
+      const caret = el.selectionStart ?? block.text.length;
+      const follower: Block = {
+        ...createBlock(isListType(block.type) ? block.type : "text"),
+        text: block.text.slice(caret),
+        indent: block.indent,
+      };
+      const next = list.map((b) => (b.id === block.id ? { ...b, text: block.text.slice(0, caret) } : b));
+      pendingFocus.current = { id: follower.id, caret: 0 };
+      onChange([...next.slice(0, index + 1), follower, ...next.slice(index + 1)]);
+      return;
+    }
+
+    if (event.key === "Backspace" && el.selectionStart === 0 && el.selectionEnd === 0) {
+      if ((block.indent ?? 0) > 0) {
+        event.preventDefault();
+        update(block.id, { indent: (block.indent ?? 0) - 1 });
+        return;
+      }
+      if (block.type !== "text") {
+        event.preventDefault();
+        update(block.id, { type: "text" });
+        return;
+      }
+      if (index === 0) {
+        if (block.text === "" && list.length > 1) {
+          event.preventDefault();
+          pendingFocus.current = !isNonText(list[1].type) ? { id: list[1].id, caret: 0 } : null;
+          onChange(list.slice(1));
+        }
+        return;
+      }
       event.preventDefault();
-      if (block.type !== "text") update(block.id, { type: "text" });
-      else remove(index);
-    } else if ((event.altKey || event.metaKey) && event.key === "ArrowUp") {
+      const prev = list[index - 1];
+      if (prev.type === "divider") {
+        onChange(list.filter((b) => b.id !== prev.id));
+        return;
+      }
+      // never delete an image by backspacing into it — use its ✕ instead
+      if (prev.type === "image") return;
+      // merge into the previous block
+      pendingFocus.current = { id: prev.id, caret: prev.text.length };
+      onChange(
+        list
+          .map((b) => (b.id === prev.id ? { ...b, text: prev.text + block.text } : b))
+          .filter((b) => b.id !== block.id),
+      );
+      return;
+    }
+
+    if (event.key === "Tab") {
+      event.preventDefault();
+      const indent = block.indent ?? 0;
+      if (event.shiftKey) {
+        if (indent > 0) update(block.id, { indent: indent - 1 });
+      } else if (indent < MAX_INDENT && index > 0) {
+        update(block.id, { indent: indent + 1 });
+      }
+      return;
+    }
+
+    if ((event.altKey || event.metaKey) && event.key === "ArrowUp") {
       event.preventDefault();
       move(index, -1);
     } else if ((event.altKey || event.metaKey) && event.key === "ArrowDown") {
@@ -166,7 +266,7 @@ export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => v
 
   return {
     list,
-    pendingFocusId,
+    pendingFocus,
     slash,
     slashItems,
     setSlashSelected: (selected: number) => slash && setSlash({ ...slash, selected }),
@@ -174,7 +274,11 @@ export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => v
       applySlashItem(slashItems[itemIndex], block, index),
     closeSlash: () => setSlash(null),
     toggleChecked: (block: Block) => update(block.id, { checked: !block.checked }),
+    update,
     remove,
+    reorder,
+    duplicate,
+    insertImageAfter,
     handleTextChange,
     handleKeyDown,
   };

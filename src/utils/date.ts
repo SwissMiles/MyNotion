@@ -1,8 +1,12 @@
 const WEEK_MS = 7 * 86400000;
 
-/** "YYYY-MM-DD" for the given date (defaults to today). */
+/** "YYYY-MM-DD" for the given date (defaults to today), using the local
+ *  calendar date — toISOString converts via UTC, which can land on the
+ *  neighbouring day depending on the timezone. */
 export function isoDate(date: Date = new Date()): string {
-  return date.toISOString().slice(0, 10);
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
 }
 
 export function fmtDate(iso: string): string {

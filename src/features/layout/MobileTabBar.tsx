@@ -1,5 +1,5 @@
 import React from "react";
-import { MAIN_NAV_ITEMS } from "../../constants";
+import { MAIN_NAV_ITEMS, MOBILE_TAB_KINDS } from "../../constants";
 import type { StaticViewKind } from "../../contexts/NavigationContext";
 import { useNavigation } from "../../contexts/NavigationContext";
 import { useActiveSemester } from "../../store";
@@ -9,10 +9,16 @@ import { openTasks } from "../../utils/tasks";
 const TAB_LABELS: Record<StaticViewKind, string> = {
   dashboard: "Home",
   tasks: "Tasks",
+  calendar: "Calendar",
   timetable: "Timetable",
+  flashcards: "Cards",
+  focus: "Focus",
   grades: "Grades",
   notes: "Notes",
 };
+
+/** Only the core views fit in the bar; the rest live in the drawer sidebar. */
+const TAB_ITEMS = MAIN_NAV_ITEMS.filter((item) => MOBILE_TAB_KINDS.includes(item.kind));
 
 /** Fixed bottom navigation shown on phone-sized viewports. */
 export function MobileTabBar() {
@@ -22,7 +28,7 @@ export function MobileTabBar() {
 
   return (
     <nav className="mobile-tabbar" aria-label="Main navigation">
-      {MAIN_NAV_ITEMS.map((item) => (
+      {TAB_ITEMS.map((item) => (
         <button
           key={item.kind}
           className={`tabbar-item ${view.kind === item.kind ? "active" : ""}`}

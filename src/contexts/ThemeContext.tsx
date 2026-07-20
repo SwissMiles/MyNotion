@@ -22,6 +22,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     writeStoredString(THEME_STORAGE_KEY, theme);
+    // Keep the browser/PWA chrome color in step with the app background.
+    document
+      .getElementById("meta-theme-color")
+      ?.setAttribute("content", theme === "dark" ? "#191919" : "#ffffff");
   }, [theme]);
 
   const value = useMemo<ThemeContextValue>(

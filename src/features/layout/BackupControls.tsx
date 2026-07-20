@@ -10,8 +10,17 @@ export function BackupControls() {
 
   async function importFile(file: File) {
     const imported = await parseBackupFile(file);
-    if (imported) dispatch({ type: "importState", state: imported });
-    else alert("That file doesn't look like a MyNotion backup.");
+    if (!imported) {
+      alert("That file doesn't look like a MyNotion backup.");
+      return;
+    }
+    const ok = confirm(
+      `Import this backup?\n\nIt contains ${imported.semesters.length} semester(s), ` +
+        `${imported.courses.length} course(s), ${imported.pages.length} page(s), ` +
+        `${imported.tasks.length} task(s) and ${imported.grades.length} grade(s).\n\n` +
+        "This will replace everything currently in MyNotion.",
+    );
+    if (ok) dispatch({ type: "importState", state: imported });
   }
 
   return (

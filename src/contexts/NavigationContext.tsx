@@ -4,7 +4,15 @@ import type { ID } from "../types";
 export type CourseTab = "notes" | "tasks" | "grades" | "info";
 
 /** Top-level views that carry no parameters. */
-export type StaticViewKind = "dashboard" | "tasks" | "timetable" | "grades" | "notes";
+export type StaticViewKind =
+  | "dashboard"
+  | "tasks"
+  | "calendar"
+  | "timetable"
+  | "flashcards"
+  | "focus"
+  | "grades"
+  | "notes";
 
 export type View =
   | { kind: StaticViewKind }

@@ -15,6 +15,8 @@ export function useActiveSemester() {
       tasks: semester ? state.tasks.filter((t) => t.semesterId === semester.id) : [],
       pages: semester ? state.pages.filter((p) => p.semesterId === semester.id) : [],
       grades: state.grades.filter((g) => courseIds.has(g.courseId)),
+      flashcards: semester ? state.flashcards.filter((c) => c.semesterId === semester.id) : [],
+      sessions: semester ? state.sessions.filter((s) => s.semesterId === semester.id) : [],
     };
   }, [state]);
 }

@@ -5,6 +5,7 @@ import { useNavigation } from "../../contexts/NavigationContext";
 import { pushRecentPage } from "../../utils/recentPages";
 import { CourseTag } from "../../components/CourseTag";
 import { BlockEditor } from "../editor/BlockEditor";
+import { blocksToMarkdown } from "../editor/markdown";
 import { IconPicker } from "./IconPicker";
 
 /** Full-page note editor. */
@@ -58,11 +59,28 @@ function PageToolbar({ page }: { page: Page }) {
     }
   }
 
+  function exportMarkdown() {
+    const blob = new Blob([blocksToMarkdown(page.title, page.blocks)], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${(page.title || "untitled").replace(/[\\/:*?"<>|]+/g, "-")}.md`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="page-view-toolbar">
       <button className="btn small ghost" onClick={goBack}>← Back</button>
       {course && <CourseTag course={course} />}
       <span className="spacer" />
+      <button
+        className="btn small ghost"
+        onClick={exportMarkdown}
+        title="Download this page as Markdown"
+      >
+        ⬇ Export .md
+      </button>
       <button className="btn small ghost danger" onClick={deletePage}>
         Delete page
       </button>

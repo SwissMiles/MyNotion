@@ -4,6 +4,7 @@ import { courseGrade, fmtGrade, isPass, roundToQuarter } from "../../utils/grade
 import { useActiveSemester } from "../../store";
 import { GradeTable } from "./GradeTable";
 import { GradeModal } from "./GradeModal";
+import { TargetHint } from "./TargetHint";
 
 /** Grade table for a single course (used inside CourseView). */
 export function CourseGrades({ course }: { course: Course }) {
@@ -40,6 +41,8 @@ export function CourseGrades({ course }: { course: Course }) {
           total 100%.
         </p>
       )}
+
+      {courseGrades.length > 0 && totalWeight < 100 && <TargetHint grades={courseGrades} />}
 
       {courseGrades.length === 0 ? (
         <div className="empty">

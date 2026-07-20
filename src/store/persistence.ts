@@ -6,13 +6,18 @@ import { readStoredJson, writeStoredJson } from "../utils/storage";
 
 const STORAGE_KEY = "mynotion-state-v1";
 
+/** Signed-in users get their own storage key so accounts don't mix. */
+function storageKeyFor(userId: string | null): string {
+  return userId ? `${STORAGE_KEY}:u:${userId}` : STORAGE_KEY;
+}
+
 /**
  * Version of the persisted AppState shape. Bump this and add an entry to
  * `migrations` below whenever a change to `types.ts` alters what gets stored —
  * existing users' localStorage data and old backup files are then upgraded
  * automatically on load/import.
  */
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 /** What we persist: the app state stamped with its schema version. */
 export type VersionedState = AppState & { version: number };
@@ -33,6 +38,8 @@ function migrateGradeV1(entry: GradeEntry): GradeEntry {
 /** Each step upgrades a state from version `from` to `from + 1`, in order. */
 const migrations: ReadonlyArray<{ from: number; migrate: (state: AppState) => AppState }> = [
   { from: 1, migrate: (state) => ({ ...state, grades: state.grades.map(migrateGradeV1) }) },
+  // v2 → v3: flashcards and study sessions were added; older snapshots lack the arrays.
+  { from: 2, migrate: (state) => state },
 ];
 
 /**
@@ -54,6 +61,8 @@ export function migrateStoredState(raw: unknown): AppState | null {
     tasks: Array.isArray(candidate.tasks) ? candidate.tasks : [],
     pages: Array.isArray(candidate.pages) ? candidate.pages : [],
     grades: Array.isArray(candidate.grades) ? candidate.grades : [],
+    flashcards: Array.isArray(candidate.flashcards) ? candidate.flashcards : [],
+    sessions: Array.isArray(candidate.sessions) ? candidate.sessions : [],
   };
   for (const { from, migrate } of migrations) {
     if (version === from) {
@@ -78,13 +87,18 @@ export function seedState(): AppState {
     tasks: [],
     pages: [],
     grades: [],
+    flashcards: [],
+    sessions: [],
   };
 }
 
-export function loadState(): AppState {
-  return migrateStoredState(readStoredJson<unknown>(STORAGE_KEY)) ?? seedState();
+export function loadState(userId: string | null = null): AppState {
+  // fall back to the pre-auth key so existing local data is adopted on first sign-in
+  const raw =
+    readStoredJson<unknown>(storageKeyFor(userId)) ?? readStoredJson<unknown>(STORAGE_KEY);
+  return migrateStoredState(raw) ?? seedState();
 }
 
-export function saveState(state: AppState): void {
-  writeStoredJson(STORAGE_KEY, serializeState(state));
+export function saveState(state: AppState, userId: string | null = null): void {
+  writeStoredJson(storageKeyFor(userId), serializeState(state));
 }

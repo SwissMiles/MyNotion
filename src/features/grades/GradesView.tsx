@@ -6,10 +6,13 @@ import { pluralize } from "../../utils/format";
 import { useActiveSemester } from "../../store";
 import { useNavigation } from "../../contexts/NavigationContext";
 import { ColorDot } from "../../components/ColorDot";
+import { NoSemesterNotice } from "../../components/NoSemesterNotice";
 
 export function GradesView() {
   const { semester, courses, grades } = useActiveSemester();
-  if (!semester) return null;
+  if (!semester) {
+    return <NoSemesterNotice message="Create a semester to start tracking grades." />;
+  }
 
   const courseAverages = courses.map((course) => ({
     course,

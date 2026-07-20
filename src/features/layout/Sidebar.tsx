@@ -3,6 +3,7 @@ import { useTheme } from "../../contexts/ThemeContext";
 import { useQuickFind } from "../../contexts/QuickFindContext";
 import { SEARCH_SHORTCUT } from "../quick-find/platform";
 import { SemesterPicker } from "../semesters/SemesterPicker";
+import { FocusIndicator } from "./FocusIndicator";
 import { SidebarNav } from "./SidebarNav";
 import { SidebarCourses } from "./SidebarCourses";
 import { BackupControls } from "./BackupControls";
@@ -10,10 +11,13 @@ import { BackupControls } from "./BackupControls";
 export function Sidebar({
   open = false,
   onClose,
+  account = null,
 }: {
   /** On mobile the sidebar is an off-canvas drawer; this slides it in. */
   open?: boolean;
   onClose?: () => void;
+  /** Signed-in account button (Clerk) when auth is configured. */
+  account?: React.ReactNode;
 }) {
   const { theme, toggleTheme } = useTheme();
   const quickFind = useQuickFind();
@@ -26,6 +30,7 @@ export function Sidebar({
         <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
           {theme === "dark" ? "☀️" : "🌙"}
         </button>
+        {account && <span className="sidebar-account">{account}</span>}
         {onClose && (
           <button className="icon-btn sidebar-close" onClick={onClose} aria-label="Close menu">
             ✕
@@ -41,6 +46,7 @@ export function Sidebar({
         </button>
       </div>
 
+      <FocusIndicator />
       <SemesterPicker />
       <SidebarNav />
       <SidebarCourses />

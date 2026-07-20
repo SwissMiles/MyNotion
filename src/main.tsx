@@ -1,10 +1,25 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { ClerkProvider } from "@clerk/clerk-react";
 import App from "./App";
+import { CLERK_PUBLISHABLE_KEY } from "./config";
 import "./styles.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    {CLERK_PUBLISHABLE_KEY ? (
+      <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} afterSignOutUrl={import.meta.env.BASE_URL}>
+        <App />
+      </ClerkProvider>
+    ) : (
+      <App />
+    )}
   </React.StrictMode>,
 );
+
+// Offline support for the installed PWA (production builds only).
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register(import.meta.env.BASE_URL + "sw.js");
+  });
+}

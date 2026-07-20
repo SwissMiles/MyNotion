@@ -40,13 +40,27 @@ export interface Task {
   notes: string;
 }
 
-export type BlockType = "text" | "h1" | "h2" | "todo" | "bullet" | "quote" | "divider" | "code";
+export type BlockType =
+  | "text"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "todo"
+  | "bullet"
+  | "numbered"
+  | "quote"
+  | "callout"
+  | "divider"
+  | "code"
+  | "image";
 
 export interface Block {
   id: ID;
   type: BlockType;
-  text: string;
+  text: string; // for image blocks this is the caption
   checked?: boolean; // for todo blocks
+  indent?: number; // 0 (default) … 4, set with Tab / Shift-Tab
+  url?: string; // for image blocks: data URI or external URL
 }
 
 export interface Page {
@@ -68,6 +82,29 @@ export interface GradeEntry {
   weight: number; // percent weight of final grade
 }
 
+export type ReviewRating = "again" | "hard" | "good" | "easy";
+
+export interface Flashcard {
+  id: ID;
+  courseId: ID | null; // null = general deck for the semester
+  semesterId: ID;
+  front: string;
+  back: string;
+  // Spaced-repetition state (SM-2 style)
+  ease: number; // ease factor, starts at 2.5
+  intervalDays: number; // current interval; 0 = new / relearning
+  reps: number; // consecutive successful reviews
+  due: string; // ISO date the card is next due
+}
+
+export interface StudySession {
+  id: ID;
+  courseId: ID | null; // null = general studying
+  semesterId: ID;
+  startedAt: string; // ISO datetime
+  minutes: number;
+}
+
 export interface AppState {
   semesters: Semester[];
   activeSemesterId: ID | null;
@@ -75,4 +112,6 @@ export interface AppState {
   tasks: Task[];
   pages: Page[];
   grades: GradeEntry[];
+  flashcards: Flashcard[];
+  sessions: StudySession[];
 }

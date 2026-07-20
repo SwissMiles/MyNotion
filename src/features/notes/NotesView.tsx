@@ -4,6 +4,7 @@ import { courseShortLabel } from "../../utils/courses";
 import { useActiveSemester, useDispatch } from "../../store";
 import { useNavigation } from "../../contexts/NavigationContext";
 import { ColorDot } from "../../components/ColorDot";
+import { NoSemesterNotice } from "../../components/NoSemesterNotice";
 import { PageListItem } from "./PageListItem";
 import { createEmptyPage, sortByRecentlyUpdated } from "./pages";
 
@@ -33,7 +34,9 @@ export function NotesView() {
   const dispatch = useDispatch();
   const { navigate } = useNavigation();
 
-  if (!semester) return null;
+  if (!semester) {
+    return <NoSemesterNotice message="Create a semester to start taking notes." />;
+  }
 
   function createPage() {
     if (!semester) return;

@@ -50,7 +50,15 @@ export interface MainNavItem {
 export const MAIN_NAV_ITEMS: MainNavItem[] = [
   { kind: "dashboard", icon: "🏠", label: "Dashboard" },
   { kind: "tasks", icon: "✅", label: "Assignments & Exams" },
+  { kind: "calendar", icon: "📅", label: "Calendar" },
   { kind: "timetable", icon: "🗓️", label: "Timetable" },
+  { kind: "flashcards", icon: "🃏", label: "Flashcards" },
+  { kind: "focus", icon: "⏱️", label: "Focus" },
   { kind: "grades", icon: "📊", label: "Grades" },
   { kind: "notes", icon: "📄", label: "All Notes" },
+];
+
+/** The subset of views that fits in the mobile bottom tab bar. */
+export const MOBILE_TAB_KINDS: StaticViewKind[] = [
+  "dashboard", "tasks", "timetable", "grades", "notes",
 ];

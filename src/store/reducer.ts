@@ -4,6 +4,8 @@ import { coursesReducer, type CoursesAction } from "./slices/courses";
 import { tasksReducer, type TasksAction } from "./slices/tasks";
 import { pagesReducer, type PagesAction } from "./slices/pages";
 import { gradesReducer, type GradesAction } from "./slices/grades";
+import { flashcardsReducer, type FlashcardsAction } from "./slices/flashcards";
+import { sessionsReducer, type SessionsAction } from "./slices/sessions";
 
 export type Action =
   | SemestersAction
@@ -11,6 +13,8 @@ export type Action =
   | TasksAction
   | PagesAction
   | GradesAction
+  | FlashcardsAction
+  | SessionsAction
   | { type: "importState"; state: AppState };
 
 /** Routes each action to its domain slice; slices own all update logic. */
@@ -39,6 +43,14 @@ export function appReducer(state: AppState, action: Action): AppState {
     case "updateGrade":
     case "deleteGrade":
       return gradesReducer(state, action);
+    case "addFlashcard":
+    case "updateFlashcard":
+    case "deleteFlashcard":
+    case "reviewFlashcard":
+      return flashcardsReducer(state, action);
+    case "addSession":
+    case "deleteSession":
+      return sessionsReducer(state, action);
     case "importState":
       return action.state;
   }
