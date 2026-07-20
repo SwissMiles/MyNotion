@@ -47,6 +47,6 @@ One global `AppState` (`src/types.ts`) holds all domain data: semesters, courses
 - Grades use the Swiss 1–6 scale (4.0 = pass); conversion and weighted-average rules live in `src/utils/grades.ts`.
 - Dates are stored as ISO strings; helpers in `src/utils/date.ts`.
 
-## Repository state caveat
+## Repository state
 
-The repo's GitHub default branch has historically been a `claude/...` working branch, while `main` holds an older, divergent line. Development happens via PRs into the default branch; the deploy workflow intentionally fires only on `main`. If asked about deploys not running, check which branch is actually the GitHub default and whether `main` is up to date.
+`main` is the single long-lived branch and the deploy branch: every push to it builds and deploys to GitHub Pages. The repo previously carried two divergent lines (an old `main` and a `claude/...` GitHub default); they were consolidated — main's extra features were ported onto the current architecture and the histories merged — and the working branches deleted. Do feature work on short-lived branches PR'd into `main`, and make sure `main` is also the GitHub default branch.
