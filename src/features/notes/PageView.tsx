@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import type { Page } from "../../types";
 import { useAppState, useDispatch, usePage } from "../../store";
 import { useNavigation } from "../../contexts/NavigationContext";
+import { useUndoableDispatch } from "../../contexts/UndoContext";
 import { pushRecentPage } from "../../utils/recentPages";
 import { CourseTag } from "../../components/CourseTag";
 import { BlockEditor } from "../editor/BlockEditor";
 import { blocksToMarkdown } from "../editor/markdown";
 import { IconPicker } from "./IconPicker";
 import { PageLinks } from "./PageLinks";
+import { duplicatePage } from "./pages";
 
 /** Full-page note editor. */
 export function PageView({ pageId }: { pageId: string }) {
@@ -52,14 +54,19 @@ function PageEditor({ page }: { page: Page }) {
 function PageToolbar({ page }: { page: Page }) {
   const state = useAppState();
   const dispatch = useDispatch();
-  const { goBack } = useNavigation();
+  const dispatchUndoable = useUndoableDispatch();
+  const { goBack, navigate } = useNavigation();
   const course = state.courses.find((c) => c.id === page.courseId);
 
   function deletePage() {
-    if (confirm(`Delete "${page.title || "Untitled"}"?`)) {
-      dispatch({ type: "deletePage", id: page.id });
-      goBack();
-    }
+    dispatchUndoable(`Deleted “${page.title || "Untitled"}”`, { type: "deletePage", id: page.id });
+    goBack();
+  }
+
+  function duplicate() {
+    const copy = duplicatePage(page);
+    dispatch({ type: "addPage", page: copy });
+    navigate({ kind: "page", pageId: copy.id });
   }
 
   function exportMarkdown() {
@@ -77,6 +84,9 @@ function PageToolbar({ page }: { page: Page }) {
       <button className="btn small ghost" onClick={goBack}>← Back</button>
       {course && <CourseTag course={course} />}
       <span className="spacer" />
+      <button className="btn small ghost" onClick={duplicate} title="Duplicate this page">
+        ⧉ Duplicate
+      </button>
       <button
         className="btn small ghost"
         onClick={exportMarkdown}

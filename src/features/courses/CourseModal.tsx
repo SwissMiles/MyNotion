@@ -3,6 +3,7 @@ import type { Course, CourseMeeting } from "../../types";
 import { COURSE_COLORS, randomCourseColor } from "../../constants";
 import { uid } from "../../utils/id";
 import { useDispatch } from "../../store";
+import { useUndoableDispatch } from "../../contexts/UndoContext";
 import { useFormState } from "../../hooks/useFormState";
 import { cssVars } from "../../utils/cssVars";
 import { Field } from "../../components/Field";
@@ -28,6 +29,7 @@ export function CourseModal({
   onClose: () => void;
 }) {
   const dispatch = useDispatch();
+  const dispatchUndoable = useUndoableDispatch();
   const { values, setField } = useFormState<CourseFormValues>({
     name: course?.name ?? "",
     code: course?.code ?? "",
@@ -56,7 +58,7 @@ export function CourseModal({
   function deleteCourse() {
     if (!course) return;
     if (confirm(`Delete "${course.name}" with all its notes, tasks and grades?`)) {
-      dispatch({ type: "deleteCourse", id: course.id });
+      dispatchUndoable(`Deleted “${course.name}”`, { type: "deleteCourse", id: course.id });
       onClose();
     }
   }

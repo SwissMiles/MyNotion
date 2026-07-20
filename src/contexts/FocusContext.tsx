@@ -145,14 +145,8 @@ export function FocusProvider({ children }: { children: React.ReactNode }) {
     [phase, running, secondsLeft, active, courseId, preset, completedToday, state.activeSemesterId],
   );
 
-  // Show the countdown in the tab title while running.
-  useEffect(() => {
-    if (running) {
-      document.title = `${fmtClock(secondsLeft)} ${phase === "focus" ? "⏱" : "☕"} · MyNotion`;
-    } else {
-      document.title = "MyNotion — Student Workspace";
-    }
-  }, [running, secondsLeft, phase]);
+  // The tab title is owned by useDocumentTitle, which shows the countdown
+  // while the timer runs.
 
   return <FocusContext.Provider value={value}>{children}</FocusContext.Provider>;
 }

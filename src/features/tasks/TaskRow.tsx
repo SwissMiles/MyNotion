@@ -1,8 +1,9 @@
 import React, { useRef, useState } from "react";
 import type { Task } from "../../types";
 import { TASK_KIND_ICONS, TASK_REPEAT_LABELS } from "../../constants";
-import { dueLabel } from "../../utils/tasks";
+import { dueLabel, snoozedDue } from "../../utils/tasks";
 import { useActiveSemester, useDispatch } from "../../store";
+import { useUndoableDispatch } from "../../contexts/UndoContext";
 import { CourseTag } from "../../components/CourseTag";
 
 /** Width of the edit/delete tray revealed by swiping left. */
@@ -22,9 +23,14 @@ export function TaskRow({
   showCourse?: boolean;
 }) {
   const dispatch = useDispatch();
+  const dispatchUndoable = useUndoableDispatch();
   const { courses } = useActiveSemester();
   const course = courses.find((c) => c.id === task.courseId);
   const due = dueLabel(task.due);
+
+  function snooze() {
+    dispatch({ type: "updateTask", task: { ...task, due: snoozedDue(task.due) } });
+  }
 
   // Touch swipe: right = toggle done, left = reveal edit/delete tray.
   const [drag, setDrag] = useState<number | null>(null);
@@ -86,7 +92,7 @@ export function TaskRow({
         <button
           className="swipe-btn swipe-btn--delete"
           tabIndex={trayOpen ? 0 : -1}
-          onClick={() => dispatch({ type: "deleteTask", id: task.id })}
+          onClick={() => dispatchUndoable(`Deleted “${task.title}”`, { type: "deleteTask", id: task.id })}
         >
           🗑 Delete
         </button>
@@ -119,6 +125,9 @@ export function TaskRow({
         )}
         {!task.done && <span className={`pill ${due.tone}`}>{due.text}</span>}
         <span className="actions">
+          {!task.done && (
+            <button className="icon-btn" onClick={snooze} title="Postpone by a day">💤</button>
+          )}
           <button className="icon-btn" onClick={() => onEdit(task)} title="Edit">✎</button>
         </span>
       </div>

@@ -28,6 +28,7 @@ export function buildQuickFindGroups(query: string, state: AppState, theme: Them
   const groups: QuickFindGroup[] = [
     { label: "Pages", items: searchPages(ctx).sort(byScore).slice(0, 8) },
     { label: "Tasks", items: searchTasks(ctx).sort(byScore).slice(0, 6) },
+    { label: "Flashcards", items: searchFlashcards(ctx).sort(byScore).slice(0, 4) },
     { label: "Courses", items: searchCourses(ctx).sort(byScore).slice(0, 4) },
     { label: "Go to", items: searchViews(ctx) },
     { label: "Semesters", items: searchSemesters(ctx).slice(0, 4) },
@@ -164,6 +165,33 @@ function searchTasks(ctx: SearchContext): QuickFindResult[] {
           ? { kind: "course", courseId: task.courseId, tab: "tasks" }
           : { kind: "tasks" },
       },
+    });
+  }
+  return results;
+}
+
+function searchFlashcards(ctx: SearchContext): QuickFindResult[] {
+  const results: QuickFindResult[] = [];
+  for (const card of ctx.state.flashcards) {
+    const frontHit = matchText(card.front, ctx.words);
+    const backHit = frontHit ? null : matchText(card.back, ctx.words);
+    if (!frontHit && !backHit) continue;
+
+    const course = card.courseId ? ctx.courseById.get(card.courseId) : null;
+    results.push({
+      key: `card-${card.id}`,
+      icon: "🃏",
+      title: card.front,
+      titleRanges: frontHit?.ranges,
+      snippet: backHit ? makeSnippet(card.back, backHit.ranges) : undefined,
+      tags: [
+        ...(course ? [{ label: course.code || course.name, color: course.color }] : []),
+        ...semesterTag(ctx, card.semesterId),
+      ],
+      score:
+        (frontHit ? 30 + frontHit.score : 12 + (backHit?.score ?? 0)) +
+        activeBoost(ctx, card.semesterId),
+      action: { type: "navigate", semesterId: card.semesterId, view: { kind: "flashcards" } },
     });
   }
   return results;

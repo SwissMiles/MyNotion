@@ -27,15 +27,19 @@ const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromi
 
 Useful flows / selectors:
 
-- App boots to **Dashboard**; navigation state is NOT persisted across reloads.
+- App boots to **Dashboard** on first run; the last view IS persisted
+  (localStorage `mynotion-last-view`) and restored on reload.
 - Reach the block editor: click sidebar "All Notes" → button "+ New page".
   Editor root: `.block-editor`, inputs: `.block-input`, block wrappers:
   `.block.h1|h2|todo|bullet|quote|code`, dividers: `.block-divider`.
 - Slash menu: type "/" in a block → `.slash-menu`, items `.slash-item`,
   selected `.slash-item.selected`.
-- Theme toggle is the last button in `.sidebar-head`; theme lands on
-  `document.documentElement.dataset.theme`.
-- Quick Find: Ctrl/⌘ K → `.qf-panel`.
+- Theme button in `.sidebar-head` cycles light → dark → system; the resolved
+  theme lands on `document.documentElement.dataset.theme`.
+- Quick Find: Ctrl/⌘ K → `.qf-panel`. Global shortcuts: `?` opens the
+  shortcuts cheat sheet, `g` then a letter jumps between views.
+- Destructive actions show an Undo toast (`.undo-toast`, button
+  `.undo-toast-btn`) instead of (or in addition to) a confirm dialog.
 
 Gotchas: use `pressSequentially` (not `fill`) so per-keystroke logic
 (markdown shortcuts, slash menu) fires; new pages are titled "Untitled" in

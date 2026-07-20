@@ -2,9 +2,10 @@ import React from "react";
 import type { Task, TaskKind, TaskPriority, TaskRepeat } from "../../types";
 import { TASK_KIND_OPTIONS, TASK_PRIORITY_OPTIONS, TASK_REPEAT_OPTIONS } from "../../constants";
 import { uid } from "../../utils/id";
-import { isoDate } from "../../utils/date";
+import { isoDate, isoDatePlusDays } from "../../utils/date";
 import { courseShortLabel } from "../../utils/courses";
 import { useActiveSemester, useDispatch } from "../../store";
+import { useUndoableDispatch } from "../../contexts/UndoContext";
 import { useFormState } from "../../hooks/useFormState";
 import { Field } from "../../components/Field";
 import { Modal } from "../../components/Modal";
@@ -22,6 +23,7 @@ export function TaskModal({
   onClose: () => void;
 }) {
   const dispatch = useDispatch();
+  const dispatchUndoable = useUndoableDispatch();
   const { semester, courses } = useActiveSemester();
   const { values, setField } = useFormState({
     title: task?.title ?? "",
@@ -55,9 +57,15 @@ export function TaskModal({
 
   function deleteTask() {
     if (!task) return;
-    dispatch({ type: "deleteTask", id: task.id });
+    dispatchUndoable(`Deleted “${task.title}”`, { type: "deleteTask", id: task.id });
     onClose();
   }
+
+  const DUE_PRESETS = [
+    { label: "Today", due: isoDate() },
+    { label: "Tomorrow", due: isoDatePlusDays(1) },
+    { label: "Next week", due: isoDatePlusDays(7) },
+  ];
 
   return (
     <Modal title={task ? "Edit task" : "New task"} onClose={onClose}>
@@ -92,6 +100,18 @@ export function TaskModal({
       <div className="form-cols">
         <Field label="Due date">
           <input type="date" value={values.due} onChange={(e) => setField("due", e.target.value)} />
+          <div className="due-presets">
+            {DUE_PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                className={`btn small ${values.due === preset.due ? "" : "ghost"}`}
+                onClick={() => setField("due", preset.due)}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
         </Field>
         <Field label="Priority">
           <select

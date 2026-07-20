@@ -3,6 +3,7 @@ import type { Semester } from "../../types";
 import { uid } from "../../utils/id";
 import { isoDate } from "../../utils/date";
 import { useAppState, useDispatch } from "../../store";
+import { useUndoableDispatch } from "../../contexts/UndoContext";
 import { useFormState } from "../../hooks/useFormState";
 import { Field } from "../../components/Field";
 import { Modal } from "../../components/Modal";
@@ -58,11 +59,11 @@ export function SemesterModal({ onClose }: { onClose: () => void }) {
 }
 
 function SemesterRow({ semester }: { semester: Semester }) {
-  const dispatch = useDispatch();
+  const dispatchUndoable = useUndoableDispatch();
 
   function deleteSemester() {
-    if (confirm(`Delete "${semester.name}" and everything in it? This can't be undone.`)) {
-      dispatch({ type: "deleteSemester", id: semester.id });
+    if (confirm(`Delete "${semester.name}" and everything in it?`)) {
+      dispatchUndoable(`Deleted “${semester.name}”`, { type: "deleteSemester", id: semester.id });
     }
   }
 
