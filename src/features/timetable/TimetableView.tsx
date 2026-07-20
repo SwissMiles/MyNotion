@@ -2,6 +2,7 @@ import React from "react";
 import { DAY_NAMES } from "../../constants";
 import { mondayDayIndex } from "../../utils/date";
 import { allMeetings, courseShortLabel, timeToMinutes, type ScheduledMeeting } from "../../utils/courses";
+import { downloadSemesterIcs } from "../../utils/ics";
 import { cssVars } from "../../utils/cssVars";
 import { useActiveSemester } from "../../store";
 import { useNavigation } from "../../contexts/NavigationContext";
@@ -14,7 +15,7 @@ const END_HOUR = 21;
 const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
 
 export function TimetableView() {
-  const { semester, courses } = useActiveSemester();
+  const { semester, courses, tasks } = useActiveSemester();
   const isMobile = useIsMobile();
   if (!semester) {
     return <NoSemesterNotice message="Create a semester to build your weekly timetable." />;
@@ -27,7 +28,17 @@ export function TimetableView() {
 
   return (
     <div className="page-wrap page-wrap--wide">
-      <h1 className="page-title">🗓️ {isMobile ? "Timetable" : "Weekly timetable"}</h1>
+      <h1 className="page-title">
+        🗓️ {isMobile ? "Timetable" : "Weekly timetable"}
+        <span className="spacer" />
+        <button
+          className="btn small"
+          onClick={() => downloadSemesterIcs(semester, courses, tasks)}
+          title="Download classes and deadlines as an .ics file for Google/Apple Calendar"
+        >
+          ⬇ Export .ics
+        </button>
+      </h1>
       <p className="page-sub">
         {isMobile
           ? "Tap a day or swipe the list to browse — tap a class to open the course."

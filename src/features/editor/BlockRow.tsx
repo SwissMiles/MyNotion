@@ -4,6 +4,8 @@ import { cssVars } from "../../utils/cssVars";
 import { fileToDataUri } from "./images";
 import { SlashMenu } from "./SlashMenu";
 import type { SlashItem } from "./slashMenu";
+import { LinkMenu } from "./LinkMenu";
+import type { LinkMenuItem } from "./wikiLinks";
 
 const PLACEHOLDERS: Record<Exclude<BlockType, "divider" | "image">, string> = {
   h1: "Heading 1",
@@ -43,6 +45,10 @@ export function BlockRow({
   onSlashHover,
   onSlashPick,
   onSlashClose,
+  linkItems,
+  linkSelected,
+  onLinkHover,
+  onLinkPick,
 }: {
   block: Block;
   /** 1-based number shown for numbered-list blocks. */
@@ -72,7 +78,12 @@ export function BlockRow({
   slashSelected: number;
   onSlashHover: (index: number) => void;
   onSlashPick: (index: number) => void;
+  /** Closes both the slash and "[[" link menus (called on blur). */
   onSlashClose: () => void;
+  linkItems: LinkMenuItem[] | null; // null = menu closed for this block
+  linkSelected: number;
+  onLinkHover: (index: number) => void;
+  onLinkPick: (index: number) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -173,6 +184,14 @@ export function BlockRow({
           selected={slashSelected}
           onHover={onSlashHover}
           onPick={onSlashPick}
+        />
+      )}
+      {linkItems && linkItems.length > 0 && (
+        <LinkMenu
+          items={linkItems}
+          selected={linkSelected}
+          onHover={onLinkHover}
+          onPick={onLinkPick}
         />
       )}
       {menu}

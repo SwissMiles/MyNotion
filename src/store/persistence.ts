@@ -17,7 +17,7 @@ function storageKeyFor(userId: string | null): string {
  * existing users' localStorage data and old backup files are then upgraded
  * automatically on load/import.
  */
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 /** What we persist: the app state stamped with its schema version. */
 export type VersionedState = AppState & { version: number };
@@ -40,6 +40,14 @@ const migrations: ReadonlyArray<{ from: number; migrate: (state: AppState) => Ap
   { from: 1, migrate: (state) => ({ ...state, grades: state.grades.map(migrateGradeV1) }) },
   // v2 → v3: flashcards and study sessions were added; older snapshots lack the arrays.
   { from: 2, migrate: (state) => state },
+  // v3 → v4: tasks gained a repeat field; older tasks don't repeat.
+  {
+    from: 3,
+    migrate: (state) => ({
+      ...state,
+      tasks: state.tasks.map((task) => ({ ...task, repeat: task.repeat ?? "none" })),
+    }),
+  },
 ];
 
 /**

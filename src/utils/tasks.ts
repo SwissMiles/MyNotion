@@ -1,5 +1,6 @@
-import type { Task } from "../types";
-import { daysUntil, fmtDate } from "./date";
+import type { Task, TaskRepeat } from "../types";
+import { daysUntil, fmtDate, isoDate } from "./date";
+import { uid } from "./id";
 
 export type DueTone = "overdue" | "soon" | "ok";
 
@@ -23,4 +24,36 @@ export function sortByDue(tasks: Task[]): Task[] {
 
 export function openTasks(tasks: Task[]): Task[] {
   return tasks.filter((t) => !t.done);
+}
+
+/** The due date one repeat interval after `dueIso`, or null for non-repeating. */
+export function nextDueDate(dueIso: string, repeat: TaskRepeat): string | null {
+  const [year, month, day] = dueIso.slice(0, 10).split("-").map(Number);
+  if (!year || !month || !day) return null;
+  const date = new Date(year, month - 1, day);
+  switch (repeat) {
+    case "weekly":
+      date.setDate(date.getDate() + 7);
+      break;
+    case "biweekly":
+      date.setDate(date.getDate() + 14);
+      break;
+    case "monthly":
+      date.setMonth(date.getMonth() + 1);
+      break;
+    default:
+      return null;
+  }
+  return isoDate(date);
+}
+
+/**
+ * The follow-up task spawned when a repeating task is completed: same task,
+ * new id, due one interval later. Null when the task doesn't repeat or the
+ * next occurrence would fall after the semester ends.
+ */
+export function nextOccurrence(task: Task, semesterEndIso: string): Task | null {
+  const due = nextDueDate(task.due, task.repeat);
+  if (!due || due > semesterEndIso) return null;
+  return { ...task, id: uid(), due, done: false };
 }

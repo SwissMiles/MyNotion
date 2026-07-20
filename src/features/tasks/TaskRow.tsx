@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import type { Task } from "../../types";
-import { TASK_KIND_ICONS } from "../../constants";
+import { TASK_KIND_ICONS, TASK_REPEAT_LABELS } from "../../constants";
 import { dueLabel } from "../../utils/tasks";
 import { useActiveSemester, useDispatch } from "../../store";
 import { CourseTag } from "../../components/CourseTag";
@@ -114,6 +114,9 @@ export function TaskRow({
           {task.title}
         </span>
         {showCourse && course && <CourseTag course={course} />}
+        {task.repeat !== "none" && (
+          <span className="pill repeat" title={TASK_REPEAT_LABELS[task.repeat]}>↻</span>
+        )}
         {!task.done && <span className={`pill ${due.tone}`}>{due.text}</span>}
         <span className="actions">
           <button className="icon-btn" onClick={() => onEdit(task)} title="Edit">✎</button>
