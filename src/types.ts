@@ -27,6 +27,7 @@ export interface Course {
 
 export type TaskKind = "assignment" | "exam" | "reading" | "project" | "other";
 export type TaskPriority = "low" | "medium" | "high";
+export type TaskRepeat = "none" | "weekly" | "biweekly" | "monthly";
 
 export interface Task {
   id: ID;
@@ -38,6 +39,8 @@ export interface Task {
   priority: TaskPriority;
   done: boolean;
   notes: string;
+  // completing a repeating task schedules the next occurrence automatically
+  repeat: TaskRepeat;
 }
 
 export type BlockType =

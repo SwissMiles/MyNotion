@@ -1,22 +1,45 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Block } from "../../types";
+import { useActiveSemester, useDispatch } from "../../store";
+import { createEmptyPage } from "../notes/pages";
 import { BlockRow } from "./BlockRow";
 import { SLASH_ITEMS } from "./slashMenu";
+import type { LinkTarget } from "./wikiLinks";
 import { isNonText, useBlockEditor } from "./useBlockEditor";
 
 const TURN_INTO = SLASH_ITEMS.filter((item) => item.type !== "divider" && item.type !== "image");
 
-/** Lightweight Notion-style block editor. Type "/" for the command menu;
- *  see markdownShortcuts.ts for the markdown syntax. Blocks can be dragged
- *  by their handle to reorder; clicking the handle opens a block menu. */
+/** Lightweight Notion-style block editor. Type "/" for the command menu,
+ *  "[[" to link another page; see markdownShortcuts.ts for the markdown
+ *  syntax. Blocks can be dragged by their handle to reorder; clicking the
+ *  handle opens a block menu. */
 export function BlockEditor({
   blocks,
   onChange,
+  currentPageId,
 }: {
   blocks: Block[];
   onChange: (blocks: Block[]) => void;
+  /** The page being edited — excluded from "[[" link suggestions. */
+  currentPageId?: string;
 }) {
-  const editor = useBlockEditor(blocks, onChange);
+  const { semester, pages } = useActiveSemester();
+  const dispatch = useDispatch();
+
+  const linkTargets = useMemo<LinkTarget[]>(
+    () =>
+      pages
+        .filter((p) => p.id !== currentPageId && p.title.trim())
+        .map((p) => ({ id: p.id, title: p.title.trim(), icon: p.icon })),
+    [pages, currentPageId],
+  );
+
+  function createLinkedPage(title: string) {
+    if (!semester) return;
+    dispatch({ type: "addPage", page: createEmptyPage(semester.id, null, title) });
+  }
+
+  const editor = useBlockEditor(blocks, onChange, linkTargets, createLinkedPage);
 
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
   const areaRefs = useRef(new Map<string, HTMLTextAreaElement>());
@@ -94,6 +117,7 @@ export function BlockEditor({
         moved = true;
         setBlockMenu(null);
         editor.closeSlash();
+        editor.closeLink();
         setDragIndex(index);
         document.body.classList.add("is-dragging");
       }
@@ -217,14 +241,21 @@ export function BlockEditor({
               slashSelected={editor.slash?.selected ?? 0}
               onSlashHover={editor.setSlashSelected}
               onSlashPick={(itemIndex) => editor.pickSlashItem(itemIndex, block, index)}
-              onSlashClose={editor.closeSlash}
+              onSlashClose={() => {
+                editor.closeSlash();
+                editor.closeLink();
+              }}
+              linkItems={editor.link?.blockId === block.id ? editor.linkItems : null}
+              linkSelected={editor.link?.selected ?? 0}
+              onLinkHover={editor.setLinkSelected}
+              onLinkPick={(itemIndex) => editor.pickLinkItem(itemIndex, block)}
             />
         );
       })}
       <div className="editor-hint">
-        Type <b>/</b> for commands — or <b># </b> heading, <b>- </b> bullet, <b>1. </b> numbered,{" "}
-        <b>[] </b> to-do, <b>&gt; </b> quote, <b>```</b> code, <b>---</b> divider. Tab indents,
-        ⌥↑/⌥↓ moves a block, drag the ⋮⋮ handle to reorder.
+        Type <b>/</b> for commands, <b>[[</b> to link a page — or <b># </b> heading, <b>- </b>{" "}
+        bullet, <b>1. </b> numbered, <b>[] </b> to-do, <b>&gt; </b> quote, <b>```</b> code,{" "}
+        <b>---</b> divider. Tab indents, ⌥↑/⌥↓ moves a block, drag the ⋮⋮ handle to reorder.
       </div>
     </div>
   );

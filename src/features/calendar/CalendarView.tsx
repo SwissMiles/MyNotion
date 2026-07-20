@@ -3,6 +3,7 @@ import type { Task } from "../../types";
 import { DAY_NAMES, TASK_KIND_ICONS } from "../../constants";
 import { isoDate, mondayDayIndex } from "../../utils/date";
 import { courseShortLabel, meetingsForDay } from "../../utils/courses";
+import { downloadSemesterIcs } from "../../utils/ics";
 import { cssVars } from "../../utils/cssVars";
 import { useActiveSemester } from "../../store";
 import { NoSemesterNotice } from "../../components/NoSemesterNotice";
@@ -89,6 +90,13 @@ export function CalendarView() {
           <span className="cal-month-label">{monthLabel}</span>
         </div>
         <span className="spacer" />
+        <button
+          className="btn small"
+          onClick={() => downloadSemesterIcs(semester, courses, tasks)}
+          title="Download classes and deadlines as an .ics file for Google/Apple Calendar"
+        >
+          ⬇ .ics
+        </button>
         <label className="cal-toggle">
           <input
             type="checkbox"

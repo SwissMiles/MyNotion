@@ -1,4 +1,4 @@
-import type { TaskKind, TaskPriority } from "./types";
+import type { TaskKind, TaskPriority, TaskRepeat } from "./types";
 import type { StaticViewKind } from "./contexts/NavigationContext";
 
 export const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -37,6 +37,20 @@ export const TASK_PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
   { value: "medium", label: "Medium" },
   { value: "high", label: "High" },
 ];
+
+export const TASK_REPEAT_OPTIONS: { value: TaskRepeat; label: string }[] = [
+  { value: "none", label: "Doesn't repeat" },
+  { value: "weekly", label: "↻ Every week" },
+  { value: "biweekly", label: "↻ Every 2 weeks" },
+  { value: "monthly", label: "↻ Every month" },
+];
+
+export const TASK_REPEAT_LABELS: Record<TaskRepeat, string> = {
+  none: "",
+  weekly: "repeats weekly",
+  biweekly: "repeats every 2 weeks",
+  monthly: "repeats monthly",
+};
 
 export const PAGE_ICONS = ["📄", "📝", "📚", "🧪", "💡", "🧠", "🗂️", "⭐"];
 

@@ -3,6 +3,7 @@ import type { Block, BlockType } from "../../types";
 import { createBlock } from "./blocks";
 import { matchMarkdownShortcut } from "./markdownShortcuts";
 import { filterSlashItems, type SlashItem } from "./slashMenu";
+import { buildLinkMenuItems, type LinkMenuItem, type LinkTarget } from "./wikiLinks";
 
 export const MAX_INDENT = 4;
 
@@ -10,6 +11,14 @@ export const MAX_INDENT = 4;
  *  starts (index right after the slash), what's been typed, and which
  *  item is highlighted. */
 interface SlashState {
+  blockId: string;
+  anchor: number;
+  query: string;
+  selected: number;
+}
+
+/** Open "[[" page-link menu; anchor is the index right after the brackets. */
+interface LinkState {
   blockId: string;
   anchor: number;
   query: string;
@@ -38,12 +47,25 @@ export function isNonText(type: BlockType): boolean {
  * caret), list continuation, indenting and block reordering. The component
  * only renders; this hook owns the operations.
  */
-export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => void) {
+export function useBlockEditor(
+  blocks: Block[],
+  onChange: (blocks: Block[]) => void,
+  /** Pages offered by the "[[" wiki-link autocomplete. */
+  linkTargets: LinkTarget[] = [],
+  /** Called when the user picks "create page" in the link menu. */
+  onCreateLinkedPage?: (title: string) => void,
+) {
   // A ref, not state: it must not trigger renders itself.
   const pendingFocus = useRef<PendingFocus | null>(null);
 
   const [slash, setSlash] = useState<SlashState | null>(null);
   const slashItems = useMemo(() => (slash ? filterSlashItems(slash.query) : []), [slash]);
+
+  const [link, setLink] = useState<LinkState | null>(null);
+  const linkItems = useMemo(
+    () => (link ? buildLinkMenuItems(linkTargets, link.query) : []),
+    [link, linkTargets],
+  );
 
   // Always present at least one block to type into; memoized so the
   // placeholder block keeps a stable id across renders.
@@ -147,6 +169,43 @@ export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => v
     else update(block.id, { type: item.type, text });
   }
 
+  /** Track the "[[" link menu as text changes: open on a freshly typed
+   *  second bracket, keep the query in sync, close when the brackets are
+   *  edited away or the caret leaves the query. */
+  function trackLink(block: Block, raw: string, caret: number) {
+    if (link && link.blockId === block.id) {
+      const bracketsGone = raw.slice(link.anchor - 2, link.anchor) !== "[[";
+      if (bracketsGone || caret < link.anchor) {
+        setLink(null);
+        return;
+      }
+      const query = raw.slice(link.anchor, caret);
+      if (query.includes("]") || query.includes("\n")) {
+        setLink(null);
+        return;
+      }
+      if (query !== link.query) setLink({ ...link, query, selected: 0 });
+      return;
+    }
+    const typedBracket =
+      block.type !== "code" &&
+      raw.length === block.text.length + 1 &&
+      raw.slice(caret - 2, caret) === "[[";
+    if (typedBracket) setLink({ blockId: block.id, anchor: caret, query: "", selected: 0 });
+  }
+
+  /** Apply a picked link item: complete the `[[query` into `[[Title]]`. */
+  function applyLinkItem(item: LinkMenuItem, block: Block) {
+    if (!link) return;
+    const title = item.kind === "page" ? item.target.title : item.title;
+    if (item.kind === "create") onCreateLinkedPage?.(title);
+    const text =
+      block.text.slice(0, link.anchor) + title + "]]" + block.text.slice(link.anchor + link.query.length);
+    setLink(null);
+    pendingFocus.current = { id: block.id, caret: link.anchor + title.length + 2 };
+    update(block.id, { text });
+  }
+
   function handleTextChange(block: Block, index: number, raw: string, caret: number) {
     const shortcut = block.type === "text" ? matchMarkdownShortcut(raw) : null;
     if (shortcut?.kind === "convert") {
@@ -160,6 +219,7 @@ export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => v
       return;
     }
     trackSlash(block, raw, caret);
+    trackLink(block, raw, caret);
     update(block.id, { text: raw });
   }
 
@@ -182,6 +242,26 @@ export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => v
       if (event.key === "Escape") {
         event.preventDefault();
         setSlash(null);
+        return;
+      }
+    }
+
+    if (link && link.blockId === block.id && linkItems.length > 0) {
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        const step = event.key === "ArrowDown" ? 1 : -1;
+        const count = linkItems.length;
+        setLink({ ...link, selected: (link.selected + step + count) % count });
+        return;
+      }
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        applyLinkItem(linkItems[link.selected], block);
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setLink(null);
         return;
       }
     }
@@ -273,6 +353,11 @@ export function useBlockEditor(blocks: Block[], onChange: (blocks: Block[]) => v
     pickSlashItem: (itemIndex: number, block: Block, index: number) =>
       applySlashItem(slashItems[itemIndex], block, index),
     closeSlash: () => setSlash(null),
+    link,
+    linkItems,
+    setLinkSelected: (selected: number) => link && setLink({ ...link, selected }),
+    pickLinkItem: (itemIndex: number, block: Block) => applyLinkItem(linkItems[itemIndex], block),
+    closeLink: () => setLink(null),
     toggleChecked: (block: Block) => update(block.id, { checked: !block.checked }),
     update,
     remove,

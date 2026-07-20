@@ -7,6 +7,7 @@ import { CourseTag } from "../../components/CourseTag";
 import { BlockEditor } from "../editor/BlockEditor";
 import { blocksToMarkdown } from "../editor/markdown";
 import { IconPicker } from "./IconPicker";
+import { PageLinks } from "./PageLinks";
 
 /** Full-page note editor. */
 export function PageView({ pageId }: { pageId: string }) {
@@ -40,8 +41,10 @@ function PageEditor({ page }: { page: Page }) {
       <PageTitleEditor page={page} />
       <BlockEditor
         blocks={page.blocks}
+        currentPageId={page.id}
         onChange={(blocks) => dispatch({ type: "setBlocks", pageId: page.id, blocks })}
       />
+      <PageLinks page={page} />
     </div>
   );
 }

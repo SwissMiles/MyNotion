@@ -24,9 +24,16 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
   progress, what's due soon and today's classes.
 - **Assignments & Exams** — tasks with type (assignment / exam / reading /
   project), due date, priority and course. Filter by status, type or course;
-  overdue and due-soon items are highlighted.
+  overdue and due-soon items are highlighted. Tasks can **repeat** (weekly,
+  every 2 weeks, monthly): completing one automatically schedules the next
+  occurrence, until the semester ends — perfect for weekly problem sets.
 - **Weekly timetable** — auto-generated from course meeting times, color-coded,
   weekend columns appear only if you have weekend classes.
+- **Calendar export (.ics)** — one click on the Timetable or Calendar view
+  downloads the whole semester as an iCalendar file: classes as weekly
+  recurring events (with rooms) until the semester ends, plus every open
+  deadline as an all-day event. Imports straight into Google Calendar, Apple
+  Calendar or Outlook, so your classes and due dates show up on your phone.
 - **Notion-style notes** — block editor with a **"/" command menu**: type `/`
   in any block to get a filterable menu of block types (text, headings,
   bulleted list, to-do, quote, code, divider). Keep typing to filter
@@ -35,6 +42,13 @@ assignments, exams, a weekly timetable and a grade tracker — organized around
   `[] ` to-do, `> ` quote, ` ``` ` code, `---` divider. Enter continues
   lists, Backspace exits them, ⌥↑/⌥↓ moves blocks. Pages can be general or
   attached to a course.
+- **Wiki-links & backlinks** — type `[[` in any block to link to another
+  page, with an autocomplete menu of your pages (and one keystroke to create
+  a page that doesn't exist yet). Every page shows its outgoing links as
+  clickable chips — dashed for links whose page hasn't been created — and a
+  **Linked mentions** section listing every page that links back to it, with
+  a snippet of the surrounding text. Build a connected knowledge base per
+  semester, Obsidian-style.
 - **Grades (Swiss system)** — grades on the Swiss 1–6 scale (6 best,
   4.0 = pass). Enter grades directly or from points using the standard formula
   (5 · points ⁄ max + 1). Course grades are weighted averages rounded to

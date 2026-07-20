@@ -1,6 +1,6 @@
 import React from "react";
-import type { Task, TaskKind, TaskPriority } from "../../types";
-import { TASK_KIND_OPTIONS, TASK_PRIORITY_OPTIONS } from "../../constants";
+import type { Task, TaskKind, TaskPriority, TaskRepeat } from "../../types";
+import { TASK_KIND_OPTIONS, TASK_PRIORITY_OPTIONS, TASK_REPEAT_OPTIONS } from "../../constants";
 import { uid } from "../../utils/id";
 import { isoDate } from "../../utils/date";
 import { courseShortLabel } from "../../utils/courses";
@@ -29,6 +29,7 @@ export function TaskModal({
     kind: task?.kind ?? ("assignment" as TaskKind),
     due: task?.due ?? defaultDue ?? isoDate(),
     priority: task?.priority ?? ("medium" as TaskPriority),
+    repeat: task?.repeat ?? ("none" as TaskRepeat),
     notes: task?.notes ?? "",
   });
 
@@ -46,6 +47,7 @@ export function TaskModal({
       priority: values.priority,
       done: task?.done ?? false,
       notes: values.notes,
+      repeat: values.repeat,
     };
     dispatch(task ? { type: "updateTask", task: saved } : { type: "addTask", task: saved });
     onClose();
@@ -101,7 +103,23 @@ export function TaskModal({
             ))}
           </select>
         </Field>
+        <Field label="Repeat">
+          <select
+            value={values.repeat}
+            onChange={(e) => setField("repeat", e.target.value as TaskRepeat)}
+          >
+            {TASK_REPEAT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </Field>
       </div>
+      {values.repeat !== "none" && (
+        <p className="muted repeat-hint">
+          Completing this task automatically schedules the next occurrence (until the semester
+          ends).
+        </p>
+      )}
 
       <Field label="Notes (optional)">
         <textarea rows={2} value={values.notes} onChange={(e) => setField("notes", e.target.value)} />
